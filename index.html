@@ -1,0 +1,850 @@
+<title>Dispatcher Pro v2 EN</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: "traffic office" — PVL brand bar on top, CHIRON loop steps, board of delivery notes + drivers */
+:root{
+  --navy:#0b2d63; --blue:#164194; --cyan:#009fe3; --coral:#e84e1b; --amber:#f9b233; --green:#1f8a5b;
+  --bg:#f3f6fa; --surface:#ffffff; --surface-2:#eaf0f7; --ink:#0d1f3c; --muted:#5d6e86; --line:#d6e0ec;
+  --accent:#164194; --accent-ink:#ffffff; --focus:#009fe3;
+  --ok-bg:#e3f4ec; --ok-ink:#16613f; --bad-bg:#fde9e3; --bad-ink:#a3320e; --warn-bg:#fff4dc; --warn-ink:#7a5200;
+  --plate:#164194; --plate-ink:#ffffff; --reefer:#dfe8f2; --reefer-ink:#0b2d63;
+  --f-display:"Barlow Condensed","Arial Narrow","Roboto Condensed",Arial,sans-serif;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --r-s:6px; --r-m:10px;
+  --shadow:0 1px 2px rgba(11,45,99,.06),0 6px 18px rgba(11,45,99,.06);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#06152e; --surface:#0c2147; --surface-2:#112b5a; --ink:#e8eef8; --muted:#9fb1cc; --line:#21407a;
+  --accent:#4d8cf0; --accent-ink:#06152e; --focus:#3fc1ff;
+  --ok-bg:#0f3a2b; --ok-ink:#8fe0b8; --bad-bg:#46190d; --bad-ink:#ffb49c; --warn-bg:#3d2c06; --warn-ink:#ffd27a;
+  --plate:#2a5cc2; --reefer:#1c3a6b; --reefer-ink:#dbe7f7;
+  --shadow:0 1px 2px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#06152e; --surface:#0c2147; --surface-2:#112b5a; --ink:#e8eef8; --muted:#9fb1cc; --line:#21407a;
+  --accent:#4d8cf0; --accent-ink:#06152e; --focus:#3fc1ff;
+  --ok-bg:#0f3a2b; --ok-ink:#8fe0b8; --bad-bg:#46190d; --bad-ink:#ffb49c; --warn-bg:#3d2c06; --warn-ink:#ffd27a;
+  --plate:#2a5cc2; --reefer:#1c3a6b; --reefer-ink:#dbe7f7;
+  --shadow:0 1px 2px rgba(0,0,0,.35); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--navy)}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;letter-spacing:.01em;line-height:1.1;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,4.5vw,3rem)} h2{font-size:1.7rem} h3{font-size:1.25rem}
+p{margin:0} a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.12em;font-size:.82rem;font-weight:600;color:var(--muted)}
+.muted{color:var(--muted)} .small{font-size:.85rem}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* Brand bar */
+.brand{background:var(--navy);color:#fff;position:sticky;top:env(safe-area-inset-top,0px);z-index:9}
+.brand .wrap{display:flex;align-items:center;gap:16px;padding-block:10px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:1.3rem;letter-spacing:.03em;color:#fff;text-decoration:none}
+.logo svg{flex:none}
+.logo small{display:block;font-family:var(--f-body);font-weight:500;font-size:.7rem;letter-spacing:.06em;opacity:.75;text-transform:uppercase}
+.nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.nav a{color:#cfe0f7;text-decoration:none;font-weight:600;font-size:.88rem;padding:7px 11px;border-radius:var(--r-s)}
+.nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav a[aria-current="page"]{background:#fff;color:var(--navy)}
+.themebtn{background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:var(--r-s);padding:6px 9px;cursor:pointer;font-size:.8rem}
+
+main{padding-block:28px 60px}
+section.view{display:grid;gap:24px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 15px;border-radius:var(--r-s);font-weight:600;cursor:pointer;text-decoration:none;font-size:.92rem}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.coral{background:var(--coral);border-color:var(--coral);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:20px;box-shadow:var(--shadow);min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:18px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px}
+
+/* Hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:28px;align-items:center}
+@media(max-width:820px){.hero{grid-template-columns:1fr}}
+.hero p.lead{font-size:1.08rem;max-width:58ch;color:var(--muted);margin-top:12px}
+.stack{display:grid;gap:12px}
+.yard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:18px;display:grid;gap:10px}
+
+/* CHIRON loop */
+.loop{display:flex;gap:0;flex-wrap:wrap;counter-reset:l}
+.loop li{list-style:none;flex:1 1 120px;padding:10px 12px;border:1px solid var(--line);background:var(--surface);margin:-1px 0 0 -1px;min-width:0}
+.loop li b{display:block;font-family:var(--f-display);font-size:1.05rem;letter-spacing:.02em}
+.loop li span{font-size:.8rem;color:var(--muted)}
+.loop li.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.loop li.on span{color:inherit;opacity:.85}
+.loop li.done{background:var(--surface-2)}
+ol.loop{padding:0;margin:0}
+
+/* Container plate */
+.plate{display:inline-grid;grid-template-columns:auto auto;align-items:center;gap:0;border-radius:4px;overflow:hidden;font-family:var(--f-display);font-weight:700;letter-spacing:.04em;line-height:1;border:1px solid rgba(0,0,0,.08)}
+.plate .no{background:var(--plate);color:var(--plate-ink);padding:6px 8px;font-size:1rem;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 3px,transparent 3px 9px)}
+.plate .iso{background:var(--amber);color:#1b1300;padding:6px 7px;font-size:1rem}
+.plate.reefer .no{background:var(--reefer);color:var(--reefer-ink);background-image:repeating-linear-gradient(90deg,rgba(11,45,99,.08) 0 3px,transparent 3px 9px)}
+
+.tag{display:inline-flex;align-items:center;font-size:.72rem;font-weight:700;letter-spacing:.05em;padding:2px 7px;border-radius:999px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);white-space:nowrap}
+.tag.adr{background:#ff8a1f;color:#1d0d00;border-color:#ff8a1f}
+.tag.reefer{background:#cfe9fb;color:#073a5e;border-color:#cfe9fb}
+.tag.intl{background:#e7defa;color:#3b1f78;border-color:#e7defa}
+.tag.night{background:#1d2a4d;color:#e4ebff;border-color:#1d2a4d}
+.tag.H{background:var(--coral);color:#fff;border-color:var(--coral)}
+.tag.M{background:var(--amber);color:#1b1300;border-color:var(--amber)}
+.tag.L{background:var(--surface-2);color:var(--muted)}
+.tags{display:flex;gap:5px;flex-wrap:wrap}
+
+/* Level cards */
+.lvl{display:grid;gap:10px;align-content:start}
+.lvl .head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.lvl .num{font-family:var(--f-display);font-size:2.4rem;font-weight:700;color:var(--accent);line-height:1}
+.lvl dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin:0;font-size:.88rem}
+.lvl dt{color:var(--muted)} .lvl dd{margin:0;font-weight:600}
+.chain{display:grid;grid-template-columns:1fr;gap:4px;font-size:.86rem;background:var(--surface-2);border-radius:var(--r-s);padding:10px}
+.chain div{display:grid;grid-template-columns:96px 1fr;gap:8px}
+.chain b{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-top:2px}
+
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+
+.callout{border-left:4px solid var(--amber);background:var(--warn-bg);color:var(--warn-ink);padding:10px 14px;border-radius:0 var(--r-s) var(--r-s) 0;font-size:.9rem}
+.callout.info{border-color:var(--cyan);background:var(--surface-2);color:var(--ink)}
+
+/* ISO decoder */
+.iso-in{font-family:var(--f-mono);font-size:1.4rem;width:7ch;text-transform:uppercase;padding:6px 10px;border:2px solid var(--line);border-radius:var(--r-s);background:var(--surface)}
+.iso-out{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.iso-out div{background:var(--surface-2);border-radius:var(--r-s);padding:8px 10px}
+.iso-out b{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+
+/* Mini-case */
+.cards3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px}
+.svc{border:1px dashed var(--line);border-radius:var(--r-m);padding:14px;display:grid;gap:8px;background:var(--surface)}
+.svc.changed{border-color:var(--coral);border-style:solid}
+.svc select{padding:7px;border-radius:var(--r-s);border:1px solid var(--line);background:var(--surface)}
+.fb{padding:10px 12px;border-radius:var(--r-s);font-size:.9rem}
+.fb.ok{background:var(--ok-bg);color:var(--ok-ink)} .fb.bad{background:var(--bad-bg);color:var(--bad-ink)} .fb.warn{background:var(--warn-bg);color:var(--warn-ink)}
+
+/* Game board */
+.hud{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--navy);color:#fff;border-radius:var(--r-m);padding:12px 16px}
+.hud .clock{font-family:var(--f-mono);font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums}
+.hud .clock.low{color:var(--amber)}
+.hud .meta{display:grid;font-size:.8rem;opacity:.85}
+.hud .meta b{font-size:1rem;opacity:1}
+.progress{flex:1 1 160px;height:8px;background:rgba(255,255,255,.18);border-radius:999px;overflow:hidden;min-width:120px}
+.progress i{display:block;height:100%;background:var(--cyan);width:0;transition:width .2s}
+.board{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:1060px){.board{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.board .drivers{grid-column:1/-1}}
+@media(max-width:700px){.board{grid-template-columns:1fr}}
+.col{display:grid;gap:10px;min-width:0}
+.colhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ship{all:unset;box-sizing:border-box;display:grid;gap:7px;background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:var(--r-s);padding:10px 12px;cursor:pointer;width:100%}
+.ship:hover{border-color:var(--accent)}
+.ship[aria-pressed="true"]{outline:2px solid var(--accent);border-left-color:var(--accent)}
+.ship.assigned{border-left-color:var(--green)}
+.ship .top{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.ship .route{font-weight:600;font-size:.92rem}
+.ship .who{font-size:.8rem;color:var(--ok-ink)}
+.focus{display:grid;gap:14px}
+.albaran{border:1px solid var(--line);border-radius:var(--r-m);overflow:hidden;background:var(--surface)}
+.albaran header{background:var(--surface-2);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.albaran header .alb{font-family:var(--f-mono);font-weight:700}
+.albaran .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
+.albaran .fields div{padding:9px 14px;border-top:1px solid var(--line);min-width:0}
+.albaran .fields div:nth-child(odd){border-right:1px solid var(--line)}
+.albaran .fields b{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.albaran .fields .wide{grid-column:1/-1;border-right:0!important}
+.customs{display:flex;gap:6px;flex-wrap:wrap}
+.customs label{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:var(--r-s);padding:6px 10px;cursor:pointer;font-weight:600;font-size:.88rem;font-family:var(--f-mono)}
+.customs input{accent-color:var(--accent)}
+.customs label:has(input:checked){background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.driver{all:unset;box-sizing:border-box;display:grid;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-s);padding:9px 12px;cursor:pointer;width:100%}
+.driver:hover{border-color:var(--accent)}
+.driver.dim{opacity:.5}
+.driver.chosen{outline:2px solid var(--green)}
+.driver:disabled{cursor:default}
+.driver .nm{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:.92rem}
+.hours{height:9px;background:var(--surface-2);border-radius:3px;display:flex;overflow:hidden;border:1px solid var(--line)}
+.hours i{display:block;height:100%;background:var(--blue);border-right:1px solid var(--surface)}
+.hours i.full{background:#1d2a4d}
+.hours i.over{background:var(--coral)}
+.hint{font-size:.78rem;color:var(--muted)}
+.why{font-size:.78rem;color:var(--bad-ink)}
+
+/* Results */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:14px 16px}
+.kpi b{display:block;font-family:var(--f-display);font-size:2.1rem;line-height:1.05;font-variant-numeric:tabular-nums}
+.kpi span{font-size:.8rem;color:var(--muted)}
+.fbrow{display:grid;grid-template-columns:84px minmax(0,1fr);gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.fbrow .st{font-weight:700;font-size:.8rem;padding:3px 8px;border-radius:999px;text-align:center;align-self:start}
+.st.ok{background:var(--ok-bg);color:var(--ok-ink)} .st.bad{background:var(--bad-bg);color:var(--bad-ink)} .st.warn{background:var(--warn-bg);color:var(--warn-ink)}
+form.ticket{display:grid;gap:12px}
+form.ticket label{display:grid;gap:4px;font-weight:600;font-size:.88rem}
+form.ticket textarea,form.ticket input,form.ticket select,.field{padding:8px 10px;border:1px solid var(--line);border-radius:var(--r-s);background:var(--surface);font-weight:400}
+textarea{min-height:64px;resize:vertical}
+
+/* Teacher */
+.bars{display:grid;gap:8px}
+.bar{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr) 34px;gap:10px;align-items:center;font-size:.86rem}
+.bar .t{height:14px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.bar .t i{display:block;height:100%;background:var(--coral)}
+.code{font-family:var(--f-display);font-size:2.6rem;font-weight:700;letter-spacing:.12em;color:var(--accent)}
+.weights{display:grid;gap:8px}
+.weights .w{display:grid;grid-template-columns:minmax(0,1fr) 60px 70px;gap:8px;align-items:center;font-size:.88rem}
+.weights input{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:var(--r-s);background:var(--surface)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--navy);color:#fff;padding:10px 16px;border-radius:var(--r-s);box-shadow:var(--shadow);z-index:20;font-size:.9rem}
+.modal-back{position:fixed;inset:0;background:rgba(6,21,46,.55);display:grid;place-items:center;z-index:15;padding:16px}
+.modal{background:var(--surface);border-radius:var(--r-m);padding:22px;max-width:460px;width:100%;display:grid;gap:12px}
+footer{border-top:1px solid var(--line);padding-block:18px;color:var(--muted);font-size:.82rem}
+footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.demo-badge{font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--warn-bg);color:var(--warn-ink);padding:2px 7px;border-radius:999px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style>
+.mission{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--amber);border-radius:var(--r-m);padding:14px 16px}
+@media(max-width:640px){.mission{grid-template-columns:1fr}}
+.mission .flag{font-family:var(--f-display);font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:.8rem;color:var(--muted)}
+.mission p{font-weight:600}
+.target{font-family:var(--f-mono);font-size:.82rem;background:var(--surface-2);border-radius:var(--r-s);padding:6px 10px;white-space:nowrap}
+.verdict{border-radius:var(--r-m);padding:18px 20px;display:grid;gap:6px}
+.verdict.win{background:var(--ok-bg);color:var(--ok-ink)} .verdict.lose{background:var(--bad-bg);color:var(--bad-ink)}
+.verdict h2{font-size:2rem}
+.stars{font-size:1.8rem;letter-spacing:.15em;line-height:1}
+.stars .off{opacity:.25}
+.lvl .obj{background:var(--surface-2);border-radius:var(--r-s);padding:10px;font-size:.88rem;display:grid;gap:4px}
+.lvl .obj b{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.join{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+.join label{display:grid;gap:4px;font-size:.82rem;font-weight:600}
+</style>
+
+<header class="brand">
+  <div class="wrap">
+    <a class="logo" href="#home" aria-label="Dispatcher Pro, home">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="7" width="32" height="20" rx="2" fill="#009fe3"/><rect x="1" y="7" width="32" height="20" rx="2" fill="none" stroke="#fff" stroke-opacity=".35"/><g stroke="#0b2d63" stroke-width="2"><path d="M7 10v14M12 10v14M17 10v14M22 10v14M27 10v14"/></g><rect x="20" y="20" width="12" height="6" fill="#f9b233"/></svg>
+      <span>DISPATCHER PRO <small>Port Virtual Lab · v2 prototype</small></span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#home">Play</a>
+      <a href="#how-to-play">How to play</a>
+      <a href="#teacher">Teacher panel</a>
+    </nav>
+    <button class="themebtn" id="themeBtn" type="button" aria-label="Switch theme">◐ Theme</button>
+  </div>
+</header>
+
+<main class="wrap" id="app">
+
+<!-- ============ HOME / PLAY ============ -->
+<section class="view" id="v-home">
+  <div id="homeBody"></div>
+</section>
+
+<!-- ============ HOW TO PLAY ============ -->
+<section class="view" id="v-how-to-play" hidden>
+  <div>
+    <p class="eyebrow">How to play</p>
+    <h2>Assign every container to a qualified driver before the clock runs out</h2>
+    <p class="muted" style="max-width:70ch;margin-top:8px">Pick a delivery note, read the container and cargo, then click a driver. Any driver who meets all the rules is a valid answer. Each level has an objective: meet it to complete the level.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="panel stack">
+      <p class="eyebrow">Simulator rules</p>
+      <h3>What the system checks</h3>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Rule</th><th>How to infer it</th></tr></thead>
+        <tbody>
+          <tr><td><b>Base</b></td><td>The driver starts from the delivery note's departure base (BCN or VLC).</td></tr>
+          <tr><td><b>Size</b></td><td>First ISO character: 2 = 20 ft, 4 = 40 ft, L = 45 ft.</td></tr>
+          <tr><td><span class="tag reefer">REEFER</span></td><td>Group R in the code, or a temperature stated for the cargo.</td></tr>
+          <tr><td><span class="tag adr">ADR</span></td><td>UN number and hazard class in the cargo (e.g. UN 1203, class 3).</td></tr>
+          <tr><td><span class="tag intl">INTL</span></td><td>Truck destination outside Spain.</td></tr>
+          <tr><td><b>Hours</b></td><td>9-hour shift. Service time = km ÷ 80 + 0.5 h loading and unloading + 0.75 h break if driving exceeds 4.5 h. A driver can chain several short services.</td></tr>
+          <tr><td><span class="tag night">OVERNIGHT</span></td><td>If the service does not fit in 9 h, it needs a driver available for overnight trips and takes their whole shift.</td></tr>
+        </tbody>
+      </table></div>
+      <p class="callout">These are simulation rules designed to train reasoning. They do not replace driving-time legislation (Regulation (EC) 561/2006) or the ADR agreement.</p>
+    </div>
+
+    <div class="panel stack">
+      <p class="eyebrow">Tool</p>
+      <h3>Decode the container's ISO code</h3>
+      <p class="small muted">From Intermediate onwards there are no requirement labels: the size and type code (ISO 6346) tells you the length and whether the container is refrigerated.</p>
+      <div class="row">
+        <label for="isoIn" class="small"><b>Code</b></label>
+        <input id="isoIn" class="iso-in" maxlength="4" value="45R1" autocomplete="off" spellcheck="false">
+        <div class="row" id="isoQuick"></div>
+      </div>
+      <div class="iso-out" id="isoOut" aria-live="polite"></div>
+      <p class="small muted">Careful: <b class="mono">45G1</b> is a 40 ft <i>high cube</i>, not a 45 ft container. The 45 ft is <b class="mono">L5G1</b>.</p>
+    </div>
+  </div>
+
+  <div class="panel stack">
+    <p class="eyebrow">Advanced and Expert levels</p>
+    <h3>Choose the customs procedure</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Situation</th><th>Procedure</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>Domestic movement, to another EU country, or goods arriving from the EU</td><td class="mono"><b>NONE</b></td><td>Barcelona → Lyon</td></tr>
+        <tr><td>Goods leaving the EU (by road or loaded on a ship at the port)</td><td class="mono"><b>EX-A</b></td><td>Barcelona → Andorra · factory → port for export to China</td></tr>
+        <tr><td>Non-EU goods released for free circulation</td><td class="mono"><b>IM-A</b></td><td>Port of Valencia → Mercavalencia</td></tr>
+        <tr><td>Non-EU goods travelling uncleared to a customs warehouse</td><td class="mono"><b>T1</b></td><td>Port of Barcelona → PLAZA warehouse, Zaragoza</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">EX-A and IM-A are the Spanish Single Administrative Document (SAD) codes for export and import declarations; T1 is the external Union transit declaration. In real operations the customs representative or freight forwarder handles the procedure; here you identify which document the movement needs.</p>
+  </div>
+
+  <div class="panel stack">
+    <p class="eyebrow">Scoring</p>
+    <h3>How points work</h3>
+    <div class="tablewrap"><table>
+      <tbody>
+        <tr><td><b>Points</b></td><td class="mono">Base points × accuracy + time bonus − penalties</td></tr>
+        <tr><td><b>Accuracy</b></td><td>Correct assignments (and correct customs procedures, where they apply) ÷ total checks</td></tr>
+        <tr><td><b>Time bonus</b></td><td>Up to 30 % of base points for time left, only with 60 % accuracy or more</td></tr>
+        <tr><td><b>Penalties</b></td><td>Recommend aid −5 % of base points per use · Expert: −5 % for each high-priority note left unassigned while a low-priority one was served</td></tr>
+        <tr><td><b>Stars</b></td><td>★ objective met · ★★ and 90 % accuracy · ★★★ 100 % with no aids</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ TEACHER ============ -->
+<section class="view" id="v-teacher" hidden>
+  <div class="row" style="justify-content:space-between;align-items:end">
+    <div>
+      <p class="eyebrow">Teacher panel</p>
+      <h2>PVL class · live results</h2>
+    </div>
+    <span class="demo-badge">Prototype · includes sample data</span>
+  </div>
+
+  <div class="grid2">
+    <div class="panel stack">
+      <h3>Your class</h3>
+      <p class="small" id="connStatus"></p>
+      <form id="openForm" class="join">
+        <label for="tCode">Class code<input id="tCode" class="field mono" style="width:9rem" required></label>
+        <label for="tPin">Teacher PIN<input id="tPin" class="field" type="password" inputmode="numeric" style="width:8rem" required></label>
+        <button class="btn primary" type="submit">Open results</button>
+      </form>
+      <details>
+        <summary class="small"><b>Create a new class</b></summary>
+        <form id="createForm" class="stack" style="margin-top:10px">
+          <label class="small" for="cSchool"><b>School</b><input id="cSchool" class="field" required style="width:100%"></label>
+          <label class="small" for="cTeacher"><b>Teacher</b><input id="cTeacher" class="field" required style="width:100%"></label>
+          <label class="small" for="cPin"><b>Teacher PIN (4–8 digits)</b><input id="cPin" class="field" type="password" inputmode="numeric" pattern="[0-9]{4,8}" required style="width:100%"></label>
+          <div class="row"><button class="btn" type="submit">Create class</button></div>
+        </form>
+      </details>
+      <div class="code mono" id="classCode">PVL-7K3Q</div>
+      <p class="small muted">Students join with the class code and a nickname; no email is requested. Everyone with the same code gets the same shifts, so results are comparable.</p>
+      <div class="row"><button class="btn" id="copyCode" type="button">Copy class code</button></div>
+    </div>
+    <div class="panel stack">
+      <h3>Most frequent mistakes</h3>
+      <p class="small muted">For group feedback at the end of the session.</p>
+      <div class="bars" id="errBars"></div>
+    </div>
+  </div>
+
+  <div class="panel stack">
+    <div class="row" style="justify-content:space-between">
+      <h3>Results</h3>
+      <div class="row"><select id="tLevel" class="field" aria-label="Filter by level"></select><button class="btn" id="copyCsv" type="button">Copy CSV</button></div>
+    </div>
+    <div class="tablewrap"><table id="resTable"></table></div>
+    <textarea id="csvOut" class="field" hidden readonly aria-label="CSV" style="font-family:var(--f-mono);font-size:.78rem;min-height:120px"></textarea>
+  </div>
+
+  <div class="grid2">
+    <div class="panel stack">
+      <h3>From accuracy to indicative mark</h3>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Accuracy</th><th class="num">Mark (0–10)</th><th>Reading</th></tr></thead>
+        <tbody id="bandsBody"></tbody>
+      </table></div>
+      <p class="small muted">Raw points are not comparable across levels; use accuracy and whether the objective was met.</p>
+    </div>
+    <div class="panel stack">
+      <h3>What changes in v2</h3>
+      <ul class="small" id="changes" style="margin:0;padding-left:18px;display:grid;gap:6px"></ul>
+    </div>
+  </div>
+
+  <div class="panel stack">
+    <h3>Google Sheet storage</h3>
+    <p class="small muted">The Apps Script web app writes to two tabs. Levels, drivers and routes still live in the code; moving them to the Sheet is the next step.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Tab</th><th>Content</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">CLASSES</td><td>Class code, school, teacher, PIN (stored as a hash), created</td><td>Live</td></tr>
+        <tr><td class="mono">RESULTS</td><td>Timestamp, class, nickname, level, shift, objective met, stars, points, accuracy, time, mistakes per rule</td><td>Live</td></tr>
+        <tr><td class="mono">LEVELS · DRIVERS · ROUTES</td><td>Game data editable from the Sheet</td><td>Next step</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap"><span>Dispatcher Pro v2 · Port Virtual Lab (PVL.ONE) · powered by Escola Europea – Intermodal Transport</span><span>Prototype for internal review</span></div></footer>
+<div id="toast" class="toast" hidden role="status"></div>
+<div id="modal" class="modal-back" hidden></div>
+
+<!-- ================= RULE ENGINE ================= -->
+<script id="engine">
+var DP = (function(){
+  var CFG = { SPEED:80, HANDLING_H:0.5, BREAK_AFTER_H:4.5, BREAK_H:0.75, SHIFT_H:9, TIME_BONUS:0.30, BONUS_MIN_ACC:0.6, HELP_PEN:0.05, PRIO_PEN:0.05 };
+  var EU = {ES:1,FR:1,IT:1,PT:1,DE:1,NL:1,BE:1};
+  var COUNTRY = {ES:'Spain',FR:'France',IT:'Italy',PT:'Portugal',DE:'Germany',AD:'Andorra',MA:'Morocco',CN:'China',TR:'Turkey',US:'USA',BR:'Brazil'};
+
+  function parseIso(code){
+    var c=String(code||'').toUpperCase().trim();
+    var len={'2':20,'4':40,'L':45}[c.charAt(0)]||null;
+    var hgt={'0':"8'",'2':"8'6\"",'5':"9'6\" high cube"}[c.charAt(1)]||null;
+    var grp={G:'General purpose',R:'Refrigerated (reefer)',U:'Open top',T:'Tank',P:'Platform'}[c.charAt(2)]||null;
+    return {code:c,ft:len,size:len?len+'FT':null,height:hgt,group:grp,reefer:c.charAt(2)==='R',valid:!!(len&&hgt&&grp&&c.length===4)};
+  }
+  function checkDigit(id){
+    var v={},n=10;
+    for(var i=0;i<26;i++){ if(n%11===0) n++; v[String.fromCharCode(65+i)]=n; n++; }
+    var s=0; id=id.toUpperCase();
+    for(var j=0;j<10;j++){ var ch=id.charAt(j); var x=/[0-9]/.test(ch)?+ch:v[ch]; s+=x*Math.pow(2,j); }
+    return (s%11)%10;
+  }
+  function r2(x){return Math.round(x*100)/100;}
+  function trip(km){
+    var drive=km/CFG.SPEED;
+    var h=drive+CFG.HANDLING_H+(drive>CFG.BREAK_AFTER_H?CFG.BREAK_H:0);
+    return {drive:r2(drive),hours:r2(h),overnight:h>CFG.SHIFT_H+1e-9};
+  }
+  // Export: goods leaving the EU (final destination). Import: depends on goods origin and delivery type.
+  function customs(s){
+    if(s.flow==='E') return EU[s.finalCountry||s.country]?'NONE':'EX-A';
+    if(EU[s.origin]) return 'NONE';
+    return s.delivery==='WAREHOUSE'?'T1':'IM-A';
+  }
+  function reqs(s){
+    var iso=parseIso(s.iso), t=trip(s.km), sp=[];
+    if(iso.reefer||s.temp) sp.push('REEFER');
+    if(s.un) sp.push('ADR');
+    if(s.country!=='ES') sp.push('INTL');
+    if(t.overnight) sp.push('OVERNIGHT');
+    return {base:s.base,size:iso.size,special:sp,trip:t,customs:customs(s),iso:iso};
+  }
+  function check(d,s,load){
+    var r=reqs(s), why=[], L=load||{h:0,over:false,n:0};
+    if(d.base!==r.base) why.push('BASE');
+    if(d.quals.indexOf(r.size)<0) why.push('SIZE');
+    r.special.forEach(function(q){ if(d.quals.indexOf(q)<0) why.push(q); });
+    if(r.trip.overnight){ if(L.n>0) why.push('HOURS'); }
+    else if(L.over || L.h+r.trip.hours>CFG.SHIFT_H+1e-9) why.push('HOURS');
+    return why;
+  }
+  function addLoad(L,s){ var t=trip(s.km); L=L||{h:0,over:false,n:0}; return {h:t.overnight?CFG.SHIFT_H:L.h+t.hours,over:L.over||t.overnight,n:L.n+1}; }
+
+  function evaluate(level,game,assign,cust,usage,elapsed){
+    var P=level.points, byId={}, loads={}, rows=[], pts=0, max=0, highMissing=0;
+    game.drivers.forEach(function(d){byId[d.id]=d;});
+    var order=game.ships.slice().sort(function(a,b){ var A=assign[a.alb],B=assign[b.alb]; return (A?A.seq:1e9)-(B?B.seq:1e9);});
+    var anyLow=game.ships.some(function(s){return s.prio==='L'&&assign[s.alb];});
+    var prioErr=0;
+    order.forEach(function(s){
+      var a=assign[s.alb], r=reqs(s), row={alb:s.alb,driver:a?a.driver:null,errors:[],ok:false};
+      max+=1;
+      if(!a){ row.errors.push('UNASSIGNED'); if(level.priority&&s.prio==='H'){ highMissing++; if(anyLow) prioErr++; } }
+      else {
+        var why=check(byId[a.driver],s,loads[a.driver]);
+        if(why.length){ row.errors=row.errors.concat(why); if(level.priority&&s.prio==='H') highMissing++; }
+        else { row.ok=true; pts+=1; loads[a.driver]=addLoad(loads[a.driver],s); }
+      }
+      if(level.customs){
+        max+=1; row.custExpected=r.customs; row.custGiven=cust[s.alb]||null;
+        if(cust[s.alb]===r.customs) pts+=1; else row.errors.push('CUSTOMS');
+      }
+      rows.push(row);
+    });
+    rows.sort(function(a,b){return a.alb-b.alb;});
+    var acc=max?pts/max:0, rem=Math.max(0,level.time-elapsed);
+    var bonus=acc>=CFG.BONUS_MIN_ACC?P*CFG.TIME_BONUS*rem/level.time:0;
+    var pen=(usage.recommend||0)*P*CFG.HELP_PEN + prioErr*P*CFG.PRIO_PEN;
+    var score=Math.max(0,Math.round(P*acc+bonus-pen));
+    var met=acc>=level.target-1e-9 && (!level.priority||highMissing===0);
+    var stars=!met?0:(acc>=0.999&&!usage.recommend?3:acc>=0.9?2:1);
+    return {score:score,acc:acc,accPct:Math.round(acc*100),bonus:Math.round(bonus),pen:Math.round(pen),highMissing:highMissing,met:met,stars:stars,rows:rows,elapsed:elapsed,points:P};
+  }
+  // Complete plan search, most constrained notes first
+  function solve(ships,drivers){
+    var cands=ships.map(function(s){ return {s:s,c:drivers.filter(function(d){return check(d,s).length===0;}),h:trip(s.km).hours}; });
+    if(cands.some(function(x){return !x.c.length;})) return null;
+    cands.sort(function(a,b){return a.c.length-b.c.length||b.h-a.h;});
+    var loads={}, plan={}, steps=0;
+    function go(i){
+      if(i===cands.length) return true; if(++steps>150000) return false;
+      var it=cands[i];
+      for(var k=0;k<it.c.length;k++){ var d=it.c[k];
+        if(check(d,it.s,loads[d.id]).length===0){ var prev=loads[d.id]; loads[d.id]=addLoad(prev,it.s); plan[it.s.alb]=d.id;
+          if(go(i+1)) return true; loads[d.id]=prev; delete plan[it.s.alb]; } }
+      return false;
+    }
+    return go(0)?plan:null;
+  }
+  function grade(acc){
+    var p=acc*100;
+    if(p>=90) return {mark:p>=95?'10':'9',label:'Excellent mastery'};
+    if(p>=80) return {mark:'8',label:'Very competent'};
+    if(p>=70) return {mark:'7',label:'Good'};
+    if(p>=60) return {mark:p>=65?'6':'5',label:'Pass'};
+    if(p>=50) return {mark:'4',label:'Nearly: review key rules'};
+    return {mark:'0–3',label:'Repeat with support'};
+  }
+  function rng(seed){ var a=seed>>>0; return function(){ a|=0; a=(a+0x6D2B79F5)|0; var t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+  function hash(str){ var h=2166136261; for(var i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+  return {CFG:CFG,EU:EU,COUNTRY:COUNTRY,parseIso:parseIso,checkDigit:checkDigit,trip:trip,customs:customs,reqs:reqs,check:check,addLoad:addLoad,evaluate:evaluate,solve:solve,grade:grade,rng:rng,hash:hash};
+})();
+</script>
+
+<!-- ================= DATA (in production: Google Sheet) ================= -->
+<script id="data">
+var DRIVERS=[
+ {id:'D1',name:'José Agapito',base:'BCN',quals:['20FT','40FT','REEFER']},
+ {id:'D2',name:'Albert Bagen',base:'BCN',quals:['20FT']},
+ {id:'D3',name:'Diego Alba',base:'BCN',quals:['20FT','40FT','45FT','ADR','OVERNIGHT']},
+ {id:'D4',name:'Francisco López',base:'BCN',quals:['40FT','45FT','ADR']},
+ {id:'D5',name:'Joaquim Piquer',base:'BCN',quals:['40FT','REEFER','ADR','OVERNIGHT']},
+ {id:'D6',name:'David Jiménez',base:'BCN',quals:['20FT','40FT','INTL','OVERNIGHT']},
+ {id:'D7',name:'Pierre Dubois',base:'BCN',quals:['40FT','45FT','REEFER','INTL','OVERNIGHT']},
+ {id:'D8',name:'Mohammed Al-Rashid',base:'BCN',quals:['20FT','40FT','ADR','INTL','OVERNIGHT']},
+ {id:'D9',name:'Laura Vidal',base:'BCN',quals:['20FT','40FT','REEFER','INTL']},
+ {id:'D10',name:'Marc Serra',base:'BCN',quals:['20FT','40FT','45FT','OVERNIGHT']},
+ {id:'D11',name:'Julián Domínguez',base:'VLC',quals:['20FT','40FT','OVERNIGHT']},
+ {id:'D12',name:'Carmen Rodríguez',base:'VLC',quals:['20FT','40FT','REEFER']},
+ {id:'D13',name:'Sofía Fernández',base:'VLC',quals:['40FT','45FT','INTL','OVERNIGHT']},
+ {id:'D14',name:'Elena Torres',base:'VLC',quals:['20FT','ADR']},
+ {id:'D15',name:'Pablo Navarro',base:'VLC',quals:['20FT','40FT','REEFER','OVERNIGHT']},
+ {id:'D16',name:'Ana Martí',base:'VLC',quals:['40FT','45FT','ADR','INTL','OVERNIGHT']},
+ {id:'D17',name:'Jorge Ruiz',base:'VLC',quals:['20FT','40FT']},
+ {id:'D18',name:'Nuria Gil',base:'VLC',quals:['20FT','40FT','REEFER','ADR','INTL']}
+];
+var BASES={BCN:'Barcelona',VLC:'Valencia'};
+var LEVELS=[
+ {key:'beginner',n:1,name:'Beginner',ships:5,time:300,points:100,target:0.8,labels:true,recommend:true,filter:true,customs:false,priority:false,
+  drivers:['D1','D2','D3','D4','D11','D12','D14','D17'],kinds:['dom'],maxKm:360,adr:.2,reefer:.25,
+  objective:'Dispatch the 5 containers of the morning shift, each with a qualified driver.',
+  adds:'Requirement labels, Recommend button and eligible-only filter.'},
+ {key:'intermediate',n:2,name:'Intermediate',ships:10,time:480,points:250,target:0.8,labels:false,recommend:false,filter:false,customs:false,priority:false,
+  drivers:['D1','D2','D3','D4','D5','D10','D11','D12','D14','D15','D17','D18'],kinds:['dom'],maxKm:1000,adr:.25,reefer:.3,
+  objective:'Cover 10 domestic services without any driver going over the 9-hour shift.',
+  adds:'No labels or aids. Read the ISO code and the cargo. Shift hours and overnight trips come in.'},
+ {key:'advanced',n:3,name:'Advanced',ships:15,time:720,points:500,target:0.75,labels:false,recommend:false,filter:false,customs:true,priority:false,
+  drivers:['D1','D2','D3','D4','D5','D6','D7','D8','D11','D12','D13','D14','D15','D16','D17','D18'],kinds:['dom','intl','imp','port'],maxKm:1000,adr:.2,reefer:.3,
+  objective:'Move 15 containers across borders and through the port: right driver and right customs procedure for each.',
+  adds:'International routes, imports and port exports. You choose the customs procedure.'},
+ {key:'expert',n:4,name:'Expert',ships:25,time:900,points:1000,target:0.7,labels:false,recommend:false,filter:false,customs:true,priority:true,
+  drivers:DRIVERS.map(function(d){return d.id;}),kinds:['dom','intl','imp','port'],maxKm:1000,adr:.2,reefer:.3,
+  objective:'Run a 25-container peak shift and serve every high-priority service.',
+  adds:'Everything at once, plus priorities. A high-priority note left unserved means the objective is not met.'}
+];
+var ROUTES={
+ BCN:{
+  dom:[['Tarragona',100],['Girona',100],['Lleida',160],['Zaragoza',310],['Valencia',350],['Pamplona',440],['Burgos',590],['Bilbao',610],['Madrid · Coslada',620],['Seville',995]],
+  intl:[['Perpignan','FR',190],['Andorra la Vella','AD',200],['Toulouse','FR',390],['Marseille','FR',510],['Lyon','FR',650],['Milan','IT',980]],
+  imp:[['Barcelona · ZAL',15,'FREE'],['Granollers',35,'FREE'],['Barcelona · Zona Franca customs warehouse',10,'WAREHOUSE'],['Zaragoza · PLAZA customs warehouse',310,'WAREHOUSE']],
+  port:[['Rubí',30],['Martorell',40],['Igualada',70]]},
+ VLC:{
+  dom:[['Castellón',75],['Alicante',170],['Albacete',190],['Murcia',240],['Zaragoza',310],['Madrid · Getafe',360],['Seville',660]],
+  intl:[['Lisbon','PT',900],['Toulouse','FR',600]],
+  imp:[['Mercavalencia',20,'FREE'],['Sagunto',30,'FREE'],['Valencia · ZAL customs warehouse',10,'WAREHOUSE'],['Madrid · Coslada dry port warehouse',360,'WAREHOUSE']],
+  port:[['Paterna',20],['Vila-real',70],['Alzira',45]]}
+};
+var PICKUP={BCN:['BCN Depot Zona Franca','BCN South Terminal'],VLC:['VLC Port Depot','VLC North Terminal']};
+var PORT={BCN:'Port of Barcelona · South Terminal',VLC:'Port of Valencia · North Terminal'};
+var GOODS={
+ gen:['Furniture','Paper reels','Ceramic tiles','Machinery','Textiles','Auto parts','Consumer electronics','Beverages','Packaging','Building materials'],
+ cold:['Fresh fruit · +4 ºC','Dairy products · +4 ºC','Chilled meat · 0/+2 ºC','Frozen fish · −18 ºC','Vaccines · +2/+8 ºC','Cut flowers · +4 ºC'],
+ adr:[['1203','Petrol · class 3'],['1993','Flammable liquid · class 3'],['1263','Paint · class 3'],['1830','Sulphuric acid · class 8'],['1789','Hydrochloric acid · class 8'],['3082','Environmentally hazardous substance · class 9']]
+};
+var NON_EU=['CN','TR','MA','US','BR'], EU_ORIG=['IT','DE','NL'], OVERSEAS=['Shanghai (CN)','New York (US)','Santos (BR)','Istanbul (TR)','Casablanca (MA)'];
+
+function generate(levelKey,seedStr){
+  var L=LEVELS.filter(function(l){return l.key===levelKey;})[0];
+  var drivers=L.drivers.map(function(id){return DRIVERS.filter(function(d){return d.id===id;})[0];});
+  for(var attempt=0;attempt<60;attempt++){
+    var R=DP.rng(DP.hash(seedStr+'#'+attempt)), pick=function(a){return a[Math.floor(R()*a.length)];};
+    var ships=[], used={};
+    for(var i=0;i<L.ships;i++){
+      var base=R()<0.55?'BCN':'VLC', kind=pick(L.kinds);
+      if(kind==='dom'&&R()<0.15&&L.kinds.length>1) kind=pick(L.kinds);
+      var s={alb:1000*L.n+i+1,base:base,prio:L.priority?(R()<0.3?'H':R()<0.64?'M':'L'):'M',flow:'E',origin:'ES',country:'ES'};
+      var cold=R()<L.reefer, adr=!cold&&R()<L.adr;
+      if(kind==='dom'){ var r=pick(ROUTES[base].dom.filter(function(x){return x[1]<=L.maxKm;})); s.from=pick(PICKUP[base]); s.to=r[0]; s.km=r[1]; }
+      else if(kind==='intl'){ var r2=pick(ROUTES[base].intl); s.from=pick(PICKUP[base]); s.to=r2[0]; s.country=r2[1]; s.km=r2[2]; }
+      else if(kind==='imp'){ var r3=pick(ROUTES[base].imp); s.flow='I'; s.from=PORT[base]; s.to=r3[0]; s.km=r3[1]; s.delivery=r3[2]; s.origin=R()<0.8?pick(NON_EU):pick(EU_ORIG); adr=false; }
+      else { var r4=pick(ROUTES[base].port); s.from=r4[0]+' (shipper)'; s.to=PORT[base]; s.km=r4[1]; s.finalCountry=R()<0.85?'XX':'IT'; s.final=s.finalCountry==='IT'?'Genoa (IT) by short sea':pick(OVERSEAS); if(s.finalCountry==='XX') s.finalCountry='CN'; }
+      var size=R(); var iso;
+      if(cold) iso=size<0.4?'22R1':'45R1';
+      else iso=size<0.35?'22G1':size<0.65?'42G1':size<0.85?'45G1':'L5G1';
+      if(cold){ s.goods=pick(GOODS.cold); s.temp=true; }
+      else if(adr){ var g=pick(GOODS.adr); s.un=g[0]; s.goods='UN '+g[0]+' · '+g[1]; }
+      else s.goods=pick(GOODS.gen);
+      if(s.flow==='I') s.goods+=' · origin '+DP.COUNTRY[s.origin];
+      s.iso=iso;
+      var pre=R()<0.5?'PVLU':'SDGU', ser; do{ ser=100000+Math.floor(R()*899999); }while(used[ser]); used[ser]=1;
+      var id=pre+ser; s.cont=id+DP.checkDigit(id);
+      ships.push(s);
+    }
+    var plan=DP.solve(ships,drivers);
+    if(plan) return {level:L,ships:ships,drivers:drivers,seed:seedStr,solution:plan};
+  }
+  return null;
+}
+</script>
+
+<script src="config.js"></script>
+<!-- ================= APP ================= -->
+<script>
+(function(){
+var $=function(s,el){return (el||document).querySelector(s);}, $$=function(s,el){return Array.prototype.slice.call((el||document).querySelectorAll(s));};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function fmt(n,d){return Number(n).toLocaleString('en-GB',{minimumFractionDigits:d||0,maximumFractionDigits:d||0});}
+function store(k,v){try{ if(v===undefined) return JSON.parse(localStorage.getItem('dp2g.'+k)||'null'); localStorage.setItem('dp2g.'+k,JSON.stringify(v)); }catch(e){return null;}}
+function toast(msg){var t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(function(){t.hidden=true;},2400);}
+function copy(text,ok){ try{ navigator.clipboard.writeText(text).then(function(){toast(ok||'Copied');},function(){toast('Select the text and copy it manually');}); }catch(e){ toast('Select the text and copy it manually'); } }
+var LV={}; LEVELS.forEach(function(l){LV[l.key]=l;});
+var API=(window.DP_CONFIG&&window.DP_CONFIG.API_URL)||'';
+function apiGet(params){ var q=Object.keys(params).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k]);}).join('&');
+  return fetch(API+'?'+q).then(function(r){return r.json();}); }
+function apiPost(body){ return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(function(r){return r.json();}); }
+var TEACH={rows:null,code:null};
+var REASON={
+  BASE:'The driver is not based at the departure point of the delivery note.',
+  SIZE:'The driver is not qualified for this container size. Check the first character of the ISO code.',
+  REEFER:'Refrigerated container or temperature-controlled cargo: a REEFER driver is required.',
+  ADR:'The cargo carries a UN number: it is dangerous goods and needs an ADR driver.',
+  INTL:'The truck goes outside Spain: a driver with an international profile is required.',
+  OVERNIGHT:'The service does not fit in a 9-hour shift: a driver available for overnight trips is required.',
+  HOURS:'With this service the driver exceeds the 9-hour shift (or is already on an overnight trip).',
+  UNASSIGNED:'Delivery note left unassigned.',
+  CUSTOMS:'Wrong or missing customs procedure.'
+};
+var RLABEL={BASE:'Wrong base',SIZE:'Container size',REEFER:'Missing REEFER',ADR:'Missing ADR',INTL:'Missing INTL profile',OVERNIGHT:'Missing overnight',HOURS:'Hours exceeded',UNASSIGNED:'Unassigned',CUSTOMS:'Customs procedure'};
+var QCLASS={REEFER:'reefer',ADR:'adr',INTL:'intl',OVERNIGHT:'night'};
+var DRV={}; DRIVERS.forEach(function(d){DRV[d.id]=d;});
+
+function plate(s){ var iso=DP.parseIso(s.iso); return '<span class="plate'+(iso.reefer?' reefer':'')+'"><span class="no">'+esc(s.cont.slice(0,4)+' '+s.cont.slice(4,10)+' '+s.cont.slice(10))+'</span><span class="iso">'+esc(s.iso)+'</span></span>'; }
+function reqTags(s){ var r=DP.reqs(s); var t='<span class="tag">'+r.size+'</span>'; r.special.forEach(function(q){ t+='<span class="tag '+QCLASS[q]+'">'+q+'</span>'; }); return t; }
+function prioTag(p){ return '<span class="tag '+p+'">'+({H:'High',M:'Medium',L:'Low'}[p])+'</span>'; }
+function starsHtml(n){ var h=''; for(var i=1;i<=3;i++) h+='<span class="'+(i<=n?'':'off')+'">★</span>'; return '<span class="stars" aria-label="'+n+' of 3 stars">'+h+'</span>'; }
+function mmss(s){ return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function classCode(){ return store('class')||'PVL-7K3Q'; }
+function shiftNo(k){ var m=store('shifts')||{}; return m[k]||1; }
+function setShift(k,n){ var m=store('shifts')||{}; m[k]=n; store('shifts',m); }
+
+/* ---------- Router ---------- */
+var VIEWS=['home','how-to-play','teacher'];
+function route(){ var h=(location.hash||'#home').slice(1); if(VIEWS.indexOf(h)<0) h='home';
+  VIEWS.forEach(function(v){ $('#v-'+v).hidden=(v!==h); });
+  $$('.nav a').forEach(function(a){ if(a.getAttribute('href')==='#'+h) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+  if(h==='teacher') renderTeacher(); if(h==='home') renderHome();
+  window.scrollTo(0,0); }
+window.addEventListener('hashchange',route);
+
+/* ---------- Theme ---------- */
+$('#themeBtn').addEventListener('click',function(){ var r=document.documentElement, cur=r.getAttribute('data-theme');
+  var dark=cur? cur==='dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  r.setAttribute('data-theme',dark?'light':'dark'); store('theme',dark?'light':'dark'); });
+(function(){var t=store('theme'); if(t) document.documentElement.setAttribute('data-theme',t);})();
+
+/* ---------- ISO decoder ---------- */
+['22G1','42G1','45G1','L5G1','22R1','45R1'].forEach(function(c){ var b=document.createElement('button'); b.type='button'; b.className='btn mono'; b.style.padding='5px 9px'; b.textContent=c; b.onclick=function(){$('#isoIn').value=c;iso();}; $('#isoQuick').appendChild(b); });
+function iso(){ var p=DP.parseIso($('#isoIn').value); var o=$('#isoOut');
+  if(!p.valid){ o.innerHTML='<div><b>Result</b>Code not recognised. Try 22G1, 42G1, L5G1 or 45R1.</div>'; return; }
+  o.innerHTML='<div><b>Length</b>'+p.ft+' ft</div><div><b>Height</b>'+p.height+'</div><div><b>Type</b>'+p.group+'</div><div><b>Driver needs</b>'+p.size+(p.reefer?' + REEFER':'')+'</div>'; }
+$('#isoIn').addEventListener('input',iso); iso();
+
+/* ---------- Game state ---------- */
+var G={stage:'menu'}; var TIMER=null;
+function bestOf(k){ var r=(store('results')||[]).filter(function(x){return x.level===k&&x.mine;}); if(!r.length) return null; return r.reduce(function(a,b){return b.score>a.score?b:a;}); }
+function renderHome(){ var b=$('#homeBody');
+  if(G.stage==='menu') b.innerHTML=menuHtml();
+  else if(G.stage==='brief') b.innerHTML=briefHtml();
+  else if(G.stage==='play'){ b.innerHTML=playShell(); drawPlay(); }
+  else if(G.stage==='results') b.innerHTML=resultsHtml();
+  bindHome(); }
+function menuHtml(){
+  var h='<div class="hero"><div><p class="eyebrow">PVL.ONE · Escola Europea</p><h1>You are the traffic manager. Get every container out on the right truck.</h1>'+
+   '<p class="lead">Each shift is a set of delivery notes leaving Barcelona and Valencia. Read the container and the cargo, assign a qualified driver within their hours and, at the higher levels, choose the customs procedure. Every level has an objective you must meet to complete it.</p>'+
+   '<div class="join" style="margin-top:18px"><label for="inCode">Class code<input id="inCode" class="field mono" value="'+esc(classCode())+'" style="width:9rem"></label><label for="inAlias">Nickname<input id="inAlias" class="field" placeholder="e.g. Red-Crane" value="'+esc(store('alias')||'')+'"></label><a class="btn" href="#how-to-play">How to play</a></div></div>'+
+   '<div class="yard"><p class="eyebrow">Sample delivery note</p>'+plate({cont:'SDGU3304092',iso:'42G1'})+'<div class="small"><b>Port of Barcelona · South Terminal</b> → <b>Zaragoza · PLAZA customs warehouse</b> · 310 km</div><div class="small muted">Electronic components · origin China</div>'+
+   '<div class="chain"><div><b>Clue</b><span>42G1, non-EU origin, delivery to a customs warehouse</span></div><div><b>Requirement</b><span>40 ft driver based in Barcelona · T1 procedure</span></div><div><b>Decision</b><span>Assign a driver who is not needed for a scarcer service</span></div></div></div></div>';
+  h+='<div class="grid4">'+LEVELS.map(function(l){ var best=bestOf(l.key);
+    return '<div class="panel lvl"><div class="head"><div><p class="eyebrow">Level '+l.n+'</p><h3>'+l.name+'</h3></div><span class="num">'+l.n+'</span></div>'+
+     '<div class="obj"><b>Objective</b><span>'+esc(l.objective)+'</span><span class="mono small">Target: '+Math.round(l.target*100)+' % accuracy'+(l.priority?' + all high priority served':'')+'</span></div>'+
+     '<dl><dt>Delivery notes</dt><dd>'+l.ships+'</dd><dt>Time</dt><dd>'+(l.time/60)+' min</dd><dt>Base points</dt><dd>'+fmt(l.points)+'</dd><dt>Best</dt><dd>'+(best?starsHtml(best.stars).replace('class="stars"','class="stars" style="font-size:1rem"')+' '+fmt(best.score)+' pts':'—')+'</dd></dl>'+
+     '<p class="small"><b>What changes:</b> '+esc(l.adds)+'</p><button class="btn primary" type="button" data-level="'+l.key+'">Play level '+l.n+'</button></div>'; }).join('')+'</div>';
+  return h; }
+function newGame(k,n){ var code=classCode(); var g=generate(k,code+'|'+k+'|'+n); G={stage:'brief',level:k,shift:n,game:g}; }
+function briefHtml(){ var l=LV[G.level], g=G.game;
+  return '<div class="mission"><span class="flag">Objective</span><p>'+esc(l.objective)+'</p><span class="target">Target '+Math.round(l.target*100)+' %'+(l.priority?' + high priority':'')+'</span></div>'+
+   '<div class="panel stack"><p class="eyebrow">Level '+l.n+' · '+l.name+' · Shift #'+G.shift+' · class '+esc(classCode())+'</p><h2>Shift briefing</h2>'+
+   '<p class="muted">'+g.ships.length+' delivery notes, '+g.drivers.length+' drivers on duty, '+(l.time/60)+' minutes. The clock starts when you press Start shift.</p>'+
+   '<div class="tablewrap"><table><thead><tr><th>Rule in play</th><th>At this level</th></tr></thead><tbody>'+
+   '<tr><td>Requirement labels</td><td>'+(l.labels?'Visible':'Hidden: infer them from the ISO code and the cargo')+'</td></tr>'+
+   '<tr><td>Aids</td><td>'+(l.recommend?'Recommend (−'+Math.round(DP.CFG.HELP_PEN*l.points)+' pts per use) and eligible-only filter':'None')+'</td></tr>'+
+   '<tr><td>Shift hours</td><td>9 h per driver; long trips need OVERNIGHT</td></tr>'+
+   '<tr><td>Customs procedure</td><td>'+(l.customs?'Required for every note (NONE, EX-A, IM-A, T1)':'Not in play')+'</td></tr>'+
+   '<tr><td>Priorities</td><td>'+(l.priority?'High-priority notes must all be served':'Not in play')+'</td></tr></tbody></table></div>'+
+   '<div class="row"><button class="btn primary" type="button" id="startBtn">Start shift</button><button class="btn" type="button" data-menu>Back to levels</button></div></div>'; }
+function playShell(){ var l=LV[G.level];
+  return '<div class="mission"><span class="flag">Objective</span><p>'+esc(l.objective)+'</p><span class="target">Target '+Math.round(l.target*100)+' %'+(l.priority?' + high priority':'')+'</span></div>'+
+   '<div class="hud"><div class="clock" id="clock">0:00</div><div class="meta"><span>Level '+l.n+' · Shift #'+G.shift+'</span><b>'+l.name+'</b></div><div class="meta"><span>Assigned</span><b id="hudCount">0</b></div><div class="progress" aria-hidden="true"><i id="hudBar"></i></div>'+
+   '<button class="btn coral" type="button" id="submitBtn">Submit plan</button></div>'+
+   '<div class="board"><div class="col"><div class="colhead"><h3>Delivery notes</h3>'+(l.filter?'<label class="small"><input type="checkbox" id="onlyElig"> Only eligible</label>':'')+'</div><div class="col" id="shipList"></div></div>'+
+   '<div class="col focus" id="focus"></div><div class="col drivers"><div class="colhead"><h3>Drivers</h3><span class="small muted">9-hour shift</span></div><div class="col" id="drvList"></div></div></div>'; }
+function startPlay(){ G.assign={}; G.cust={}; G.seq=0; G.usage={recommend:0}; G.sel=G.game.ships[0].alb; G.t0=Date.now(); G.stage='play'; G.onlyElig=false;
+  renderHome(); clearInterval(TIMER); TIMER=setInterval(tick,500); tick(); }
+function elapsed(){ return Math.min(LV[G.level].time,Math.round((Date.now()-G.t0)/1000)); }
+function tick(){ if(G.stage!=='play'){clearInterval(TIMER);return;} var rem=LV[G.level].time-elapsed(), c=$('#clock'); if(!c) return;
+  c.textContent=mmss(rem); c.classList.toggle('low',rem<=60);
+  if(rem<=0){ clearInterval(TIMER); toast('Time is up: the plan is being submitted'); finish(); } }
+function shipById(id){ return G.game.ships.filter(function(s){return s.alb===id;})[0]; }
+function loads(exceptAlb){ var L={}; Object.keys(G.assign).map(function(k){return {alb:+k,a:G.assign[k]};}).sort(function(a,b){return a.a.seq-b.a.seq;})
+  .forEach(function(x){ if(x.alb===exceptAlb) return; L[x.a.driver]=DP.addLoad(L[x.a.driver],shipById(x.alb)); }); return L; }
+function drawPlay(){ var l=LV[G.level], g=G.game, L=loads(), n=Object.keys(G.assign).length, Lsel=loads(G.sel);
+  $('#hudCount').textContent=n+' / '+g.ships.length; $('#hudBar').style.width=(100*n/g.ships.length)+'%';
+  $('#shipList').innerHTML=g.ships.filter(function(s){ if(!G.onlyElig) return true; var Ls=loads(s.alb); return g.drivers.some(function(d){return DP.check(d,s,Ls[d.id]).length===0;}); }).map(function(s){ var a=G.assign[s.alb];
+    return '<button type="button" class="ship'+(a?' assigned':'')+'" data-ship="'+s.alb+'" aria-pressed="'+(G.sel===s.alb)+'"><div class="top"><span class="mono"><b>'+s.alb+'</b></span>'+(l.priority?prioTag(s.prio):'')+'</div>'+plate(s)+
+      '<div class="route">'+esc(BASES[s.base])+' → '+esc(s.to)+'</div>'+(l.labels?'<div class="tags">'+reqTags(s)+'</div>':'')+(a?'<div class="who">✓ '+esc(DRV[a.driver].name)+(l.customs&&G.cust[s.alb]?' · '+G.cust[s.alb]:'')+'</div>':'')+'</button>'; }).join('');
+  var s=shipById(G.sel), t=DP.trip(s.km), a=G.assign[s.alb];
+  var f='<div class="albaran"><header><span class="alb">DELIVERY NOTE '+s.alb+'</span>'+(l.priority?prioTag(s.prio):'')+'</header><div class="fields">'+
+   '<div class="wide"><b>Container</b>'+plate(s)+'</div>'+
+   '<div><b>Base / pick-up</b>'+esc(BASES[s.base])+' · '+esc(s.from)+'</div><div><b>Delivery</b>'+esc(s.to)+' ('+esc(DP.COUNTRY[s.country])+')</div>'+
+   '<div><b>Distance</b><span class="mono">'+s.km+' km</span></div><div><b>Estimated service</b><span class="mono">'+fmt(t.hours,2)+' h</span>'+(l.labels?'':' <span class="small muted">('+fmt(t.drive,2)+' h driving)</span>')+'</div>'+
+   '<div class="wide"><b>Cargo</b>'+esc(s.goods)+'</div>'+
+   (l.customs?'<div><b>Flow</b>'+(s.flow==='E'?(s.final?'Export via the port · final destination '+esc(s.final):'Outbound'):'Inbound import')+'</div><div><b>'+(s.flow==='I'?'Delivery type':'Truck destination')+'</b>'+(s.flow==='I'?(s.delivery==='WAREHOUSE'?'Customs warehouse':'Consignee premises'):esc(DP.COUNTRY[s.country]))+'</div>':'')+
+   (l.labels?'<div class="wide"><b>Requirements</b><div class="tags">'+reqTags(s)+'</div></div>':'')+'</div></div>';
+  if(l.customs) f+='<div class="panel stack" style="padding:14px"><b>Customs procedure for '+s.alb+'</b><div class="customs" role="radiogroup" aria-label="Customs procedure">'+['NONE','EX-A','IM-A','T1'].map(function(c){return '<label><input type="radio" name="cust" value="'+c+'"'+(G.cust[s.alb]===c?' checked':'')+'> '+c+'</label>';}).join('')+'</div></div>';
+  f+='<div class="row">'+(a?'<button class="btn" type="button" id="unassign">Remove assignment</button>':'')+(l.recommend?'<button class="btn" type="button" id="recBtn">Recommend (−'+Math.round(DP.CFG.HELP_PEN*l.points)+' pts)</button>':'')+'</div>';
+  f+='<p class="hint">Select a delivery note and click a driver to assign it. A driver can take several short services if they fit in the shift.</p>';
+  $('#focus').innerHTML=f;
+  $('#drvList').innerHTML=g.drivers.map(function(d){ var ld=L[d.id]||{h:0,over:false,n:0}, why=DP.check(d,s,Lsel[d.id]), mine=a&&a.driver===d.id;
+    var segs=Object.keys(G.assign).filter(function(k){return G.assign[k].driver===d.id;}).map(function(k){var x=DP.trip(shipById(+k).km); return '<i class="'+(x.overnight?'full':'')+'" style="width:'+(100*Math.min(9,x.overnight?9:x.hours)/9)+'%" title="'+k+'"></i>';}).join('');
+    return '<button type="button" class="driver'+(mine?' chosen':'')+(l.filter&&G.onlyElig&&why.length?' dim':'')+'" data-drv="'+d.id+'"><div class="nm"><span>'+esc(d.name)+'</span><span class="small muted">'+d.base+'</span></div>'+
+      '<div class="tags">'+d.quals.map(function(q){return '<span class="tag '+(QCLASS[q]||'')+'">'+q+'</span>';}).join('')+'</div>'+
+      '<div class="hours" aria-label="Hours used">'+segs+'</div><div class="hint mono">'+fmt(ld.over?9:ld.h,2)+' / 9 h'+(ld.over?' · overnight':'')+'</div>'+
+      (l.labels&&why.length&&!mine?'<div class="why">Does not meet: '+why.map(function(w){return RLABEL[w]||w;}).join(', ')+'</div>':'')+'</button>'; }).join(''); }
+function finish(){ clearInterval(TIMER); var l=LV[G.level];
+  G.res=DP.evaluate(l,G.game,G.assign,G.cust,G.usage,elapsed());
+  var all=store('results')||[]; all.push({alias:store('alias')||'You',level:l.key,shift:G.shift,score:G.res.score,acc:G.res.accPct,met:G.res.met,stars:G.res.stars,time:G.res.elapsed,errors:G.res.rows.reduce(function(o,r){r.errors.forEach(function(e){o[e]=(o[e]||0)+1;});return o;},{}),mine:true});
+  store('results',all.slice(-60)); G.stage='results'; G.saved=API?'sending':'local'; renderHome();
+  if(API){ var last=all[all.length-1];
+    apiPost({action:'submit',classCode:classCode(),alias:last.alias,level:last.level,shift:last.shift,met:last.met,stars:last.stars,score:last.score,acc:last.acc,time:last.time,errors:last.errors})
+    .then(function(r){ G.saved=r&&r.ok?'cloud':'error:'+((r&&r.error)||'unknown'); showSaved(); })
+    .catch(function(){ G.saved='error:network'; showSaved(); }); } }
+function showSaved(){ var el=$('#saveStatus'); if(!el) return;
+  var m={local:'Result saved in this browser only (no Google Sheet connected).',sending:'Saving result to the class…',cloud:'Result saved to the class results.'};
+  el.textContent=m[G.saved]||('Could not save to the class results ('+G.saved.slice(6)+'). It is kept in this browser.'); }
+function resultsHtml(){ var l=LV[G.level], R=G.res, gr=DP.grade(R.acc);
+  var why=R.met?'Objective met.':(R.acc<l.target?'Accuracy '+R.accPct+' % is below the '+Math.round(l.target*100)+' % target.':'')+(l.priority&&R.highMissing?' '+R.highMissing+' high-priority note(s) not correctly served.':'');
+  var h='<div class="verdict '+(R.met?'win':'lose')+'"><p class="eyebrow" style="color:inherit">Level '+l.n+' · Shift #'+G.shift+'</p><h2>'+(R.met?'Level complete':'Objective not met')+'</h2>'+starsHtml(R.stars)+'<p>'+esc(why)+'</p></div>'+
+   '<div class="kpis"><div class="kpi"><b>'+fmt(R.score)+'</b><span>Points · base '+fmt(l.points)+'</span></div><div class="kpi"><b>'+R.accPct+' %</b><span>Accuracy · target '+Math.round(l.target*100)+' %</span></div><div class="kpi"><b>'+gr.mark+'</b><span>Indicative mark (0–10) · '+esc(gr.label)+'</span></div><div class="kpi"><b class="mono">'+mmss(R.elapsed)+'</b><span>Time · bonus +'+R.bonus+(R.pen?' · penalties −'+R.pen:'')+'</span></div></div>'+
+   '<p class="small muted" id="saveStatus" aria-live="polite"></p><div class="row"><button class="btn primary" type="button" id="retryBtn">Replay this shift</button><button class="btn" type="button" id="newShiftBtn">New shift</button>'+(R.met&&l.n<4?'<button class="btn coral" type="button" data-level="'+LEVELS[l.n].key+'">Next level: '+LEVELS[l.n].name+'</button>':'')+'<button class="btn" type="button" data-menu>All levels</button></div>';
+  h+='<div class="panel stack"><h3>Feedback per delivery note</h3><div>'+R.rows.map(function(r){ var s=shipById(r.alb), good=!r.errors.length;
+    var msgs=r.errors.map(function(e){ return e==='CUSTOMS'?'Customs procedure: you chose '+(r.custGiven||'none')+', the correct one was '+r.custExpected+'.':REASON[e]; });
+    return '<div class="fbrow"><span class="st '+(good?'ok':r.errors.indexOf('UNASSIGNED')>=0?'warn':'bad')+'">'+(good?'Correct':'Review')+'</span><div><b class="mono">'+r.alb+'</b>'+(l.priority?' '+prioTag(s.prio):'')+' · '+esc(BASES[s.base])+' → '+esc(s.to)+' · '+(r.driver?esc(DRV[r.driver].name):'no driver')+(l.customs?' · '+esc(r.custGiven||'—'):'')+
+      (msgs.length?'<ul class="small" style="margin:4px 0 0;padding-left:18px">'+msgs.map(function(m){return '<li>'+esc(m)+'</li>';}).join('')+'</ul>':'')+'</div></div>'; }).join('')+'</div></div>';
+  return h; }
+function saveJoin(){ var c=$('#inCode'), a=$('#inAlias'); if(c) store('class',c.value.trim().toUpperCase()||'PVL-7K3Q'); if(a) store('alias',a.value.trim()||'Anonymous'); }
+function bindHome(){
+  $$('[data-level]').forEach(function(b){ b.onclick=function(){ saveJoin(); var k=b.getAttribute('data-level'); newGame(k,shiftNo(k)); renderHome(); window.scrollTo(0,0); }; });
+  $$('[data-menu]').forEach(function(b){ b.onclick=function(){ G={stage:'menu'}; renderHome(); }; });
+  showSaved();
+  var sb=$('#startBtn'); if(sb) sb.onclick=startPlay;
+  var rb=$('#retryBtn'); if(rb) rb.onclick=function(){ G.stage='brief'; renderHome(); };
+  var nb=$('#newShiftBtn'); if(nb) nb.onclick=function(){ var n=shiftNo(G.level)+1; setShift(G.level,n); newGame(G.level,n); renderHome(); };
+  if(G.stage!=='play') return;
+  var body=$('#homeBody');
+  body.onclick=function(e){
+    var sh=e.target.closest('[data-ship]'); if(sh){ G.sel=+sh.getAttribute('data-ship'); drawPlay(); return; }
+    var dv=e.target.closest('[data-drv]'); if(dv){ var id=dv.getAttribute('data-drv'), cur=G.assign[G.sel]; G.assign[G.sel]={driver:id,seq:cur&&cur.driver===id?cur.seq:++G.seq}; drawPlay(); return; }
+    if(e.target.id==='unassign'){ delete G.assign[G.sel]; drawPlay(); return; }
+    if(e.target.id==='recBtn'){ var s=shipById(G.sel), L=loads(G.sel);
+      var pick=G.game.drivers.filter(function(d){return DP.check(d,s,L[d.id]).length===0;})[0];
+      G.usage.recommend++; if(pick){ G.assign[G.sel]={driver:pick.id,seq:++G.seq}; toast('Recommended: '+pick.name); } else toast('No valid driver left for this delivery note'); drawPlay(); return; }
+    if(e.target.id==='submitBtn') askSubmit();
+  };
+  body.onchange=function(e){ if(e.target.name==='cust'){ G.cust[G.sel]=e.target.value; drawPlay(); } if(e.target.id==='onlyElig'){ G.onlyElig=e.target.checked; drawPlay(); } };
+}
+function askSubmit(){ var g=G.game, l=LV[G.level], n=Object.keys(G.assign).length, nc=Object.keys(G.cust).length, miss=g.ships.length-n, m=$('#modal');
+  m.innerHTML='<div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><h3 id="mt">Submit the plan?</h3><p class="small">'+(miss?miss+' delivery note(s) unassigned. ':'All delivery notes assigned. ')+(l.customs&&nc<g.ships.length?(g.ships.length-nc)+' without a customs procedure. ':'')+'Once submitted, the plan cannot be changed.</p><div class="row"><button class="btn coral" type="button" id="mYes">Submit</button><button class="btn" type="button" id="mNo">Keep reviewing</button></div></div>';
+  m.hidden=false; $('#mNo').focus(); $('#mYes').onclick=function(){m.hidden=true; finish();}; $('#mNo').onclick=function(){m.hidden=true;}; }
+
+/* ---------- Teacher panel ---------- */
+var DEMO=[
+ {alias:'Red-Crane',level:'beginner',shift:1,score:118,acc:100,met:true,stars:3,time:142,errors:{}},{alias:'Reefer-23',level:'beginner',shift:1,score:84,acc:80,met:true,stars:1,time:201,errors:{SIZE:1}},
+ {alias:'Stowage',level:'intermediate',shift:1,score:262,acc:90,met:true,stars:2,time:350,errors:{HOURS:1}},{alias:'TEU-Max',level:'intermediate',shift:1,score:187,acc:80,met:true,stars:1,time:430,errors:{OVERNIGHT:1,HOURS:1}},
+ {alias:'Shifter',level:'intermediate',shift:1,score:149,acc:60,met:false,stars:0,time:480,errors:{HOURS:2,REEFER:1,SIZE:1}},{alias:'Bollard-7',level:'advanced',shift:1,score:497,acc:83,met:true,stars:1,time:612,errors:{CUSTOMS:4,INTL:1}},
+ {alias:'Draught',level:'advanced',shift:1,score:341,acc:63,met:false,stars:0,time:720,errors:{CUSTOMS:7,HOURS:1,UNASSIGNED:3}},{alias:'Red-Crane',level:'advanced',shift:1,score:560,acc:93,met:true,stars:2,time:540,errors:{CUSTOMS:2}},
+ {alias:'Mooring',level:'expert',shift:1,score:928,acc:86,met:true,stars:1,time:781,errors:{CUSTOMS:5,HOURS:2}},{alias:'Reefer-23',level:'expert',shift:1,score:612,acc:62,met:false,stars:0,time:900,errors:{UNASSIGNED:6,CUSTOMS:9,REEFER:2,BASE:1}}];
+function renderTeacher(){
+  $('#classCode').textContent=TEACH.code||classCode();
+  if(!$('#tCode').value) $('#tCode').value=TEACH.code||classCode();
+  $('#connStatus').innerHTML=!API?'<span class="demo-badge">Not connected</span> Add the Apps Script URL to config.js to collect results in the Google Sheet. Showing sample data and this browser\u2019s games.'
+    :TEACH.rows?'<span class="st ok" style="padding:2px 8px;border-radius:999px;font-weight:700">Connected</span> Showing '+TEACH.rows.length+' result(s) from the Google Sheet for '+esc(TEACH.code)+'.'
+    :'<span class="st warn" style="padding:2px 8px;border-radius:999px;font-weight:700">Connected</span> Enter the class code and PIN to load results.';
+  var mine=(store('results')||[]).filter(function(r){return r.mine;});
+  var all=TEACH.rows?TEACH.rows:DEMO.map(function(r){r.demo=true;return r;}).concat(mine);
+  var sel=$('#tLevel'); if(!sel.options.length){ sel.innerHTML='<option value="">All levels</option>'+LEVELS.map(function(l){return '<option value="'+l.key+'">Level '+l.n+' · '+l.name+'</option>';}).join(''); sel.onchange=renderTeacher; }
+  var rows=all.filter(function(r){return !sel.value||r.level===sel.value;});
+  $('#resTable').innerHTML='<thead><tr><th>Nickname</th><th>Level</th><th class="num">Shift</th><th>Objective</th><th class="num">Points</th><th class="num">Accuracy</th><th class="num">Ind. mark</th><th class="num">Time</th><th>Mistakes</th></tr></thead><tbody>'+
+   rows.map(function(r){ var errs=Object.keys(r.errors||{}).map(function(k){return RLABEL[k]+' ×'+r.errors[k];}).join(', ');
+     return '<tr><td>'+esc(r.alias)+(r.demo?' <span class="demo-badge">sample</span>':'')+'</td><td>'+LV[r.level].n+' · '+LV[r.level].name+'</td><td class="num">#'+r.shift+'</td><td>'+(r.met?'<span class="st ok" style="padding:2px 8px;border-radius:999px;font-size:.78rem;font-weight:700">Met '+'★'.repeat(r.stars)+'</span>':'<span class="st bad" style="padding:2px 8px;border-radius:999px;font-size:.78rem;font-weight:700">Not met</span>')+'</td><td class="num">'+fmt(r.score)+'</td><td class="num">'+r.acc+' %</td><td class="num">'+DP.grade(r.acc/100).mark+'</td><td class="num mono">'+mmss(r.time)+'</td><td class="small">'+(errs||'—')+'</td></tr>'; }).join('')+'</tbody>';
+  var tot={}; rows.forEach(function(r){Object.keys(r.errors||{}).forEach(function(k){tot[k]=(tot[k]||0)+r.errors[k];});});
+  var keys=Object.keys(tot).sort(function(a,b){return tot[b]-tot[a];}), mx=keys.length?tot[keys[0]]:1;
+  $('#errBars').innerHTML=keys.length?keys.map(function(k){return '<div class="bar"><span>'+RLABEL[k]+'</span><span class="t"><i style="width:'+(100*tot[k]/mx)+'%"></i></span><span class="mono">'+tot[k]+'</span></div>';}).join(''):'<p class="small muted">No mistakes recorded for this filter.</p>';
+  $('#copyCsv').onclick=function(){ var csv='nickname,level,shift,objective_met,stars,points,accuracy,time_s,'+Object.keys(RLABEL).join(',')+'\n'+rows.map(function(r){return [r.alias,r.level,r.shift,r.met,r.stars,r.score,r.acc,r.time].concat(Object.keys(RLABEL).map(function(k){return (r.errors||{})[k]||0;})).join(',');}).join('\n');
+    var o=$('#csvOut'); o.value=csv; o.hidden=false; o.select(); copy(csv,'CSV copied'); };
+  $('#bandsBody').innerHTML=[['90–100 %','9–10','Excellent mastery'],['80–89 %','8','Very competent'],['70–79 %','7','Good'],['60–69 %','5–6','Pass'],['50–59 %','4','Nearly: review key rules'],['< 50 %','0–3','Repeat with support']].map(function(b){return '<tr><td>'+b[0]+'</td><td class="num">'+b[1]+'</td><td>'+b[2]+'</td></tr>';}).join('');
+  var ch=$('#changes'); if(!ch.children.length) ch.innerHTML=[
+   'Each level has an objective and a target. The result says whether the level is complete, with 0–3 stars.',
+   'Shifts are generated from the class code, so every student in a class plays the same shift. A new shift is generated on request, and the generator checks that a full solution exists.',
+   'Rule-based validation: any driver who meets the requirements is valid; there is no single correct answer.',
+   'Fixed: Beginner used a flat 250 base points and could outscore Expert. Each level now uses its own base points.',
+   'Fixed: exceeding hours no longer counts as correct with a penalty; the assignment is wrong and the feedback explains why.',
+   'Fixed: trips longer than 9 h could never get a driver. They now require OVERNIGHT and take the whole shift.',
+   'Fixed: 45G1 is a 40 ft high cube. The 45 ft is L5G1 (in the v5 sheet, delivery note 1006 marked it as 45 ft).',
+   'CUSTOMS is no longer a driver qualification: it is a player task (NONE, EX-A, IM-A, T1), including exports loaded at the port.',
+   'No double penalty: an unassigned delivery note already counts as an accuracy error.',
+   'Penalties unified in CONFIG: the Recommend aid costs 5 % of base points (the guide said −80 and the sheet −45).',
+   'Nickname and class code instead of the student’s email.'
+  ].map(function(t){return '<li>'+esc(t)+'</li>';}).join('');
+}
+function newCode(){ var a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', c='PVL-'; for(var i=0;i<4;i++) c+=a[Math.floor(Math.random()*a.length)]; return c; }
+$('#openForm').onsubmit=function(e){ e.preventDefault(); var code=$('#tCode').value.trim().toUpperCase(), pin=$('#tPin').value.trim();
+  if(!API){ toast('Not connected: add the Apps Script URL to config.js'); return; }
+  apiGet({action:'results',classCode:code,pin:pin}).then(function(r){
+    if(!r.ok){ toast(r.error==='BAD_PIN'?'Wrong class code or PIN':'Could not load results: '+r.error); return; }
+    TEACH.rows=r.results; TEACH.code=code; renderTeacher(); toast('Results loaded'); }).catch(function(){ toast('Network error: check the Apps Script URL'); }); };
+$('#createForm').onsubmit=function(e){ e.preventDefault(); var c=newCode(), pin=$('#cPin').value.trim();
+  if(!API){ $('#classCode').textContent=c; store('class',c); toast('Local class code: '+c+' (not connected)'); return; }
+  apiPost({action:'createClass',classCode:c,school:$('#cSchool').value.trim(),teacher:$('#cTeacher').value.trim(),pin:pin}).then(function(r){
+    if(!r.ok){ toast('Could not create the class: '+r.error); return; }
+    TEACH.code=c; TEACH.rows=[]; store('class',c); $('#tCode').value=c; $('#tPin').value=pin; renderTeacher(); toast('Class created: '+c); }).catch(function(){ toast('Network error: check the Apps Script URL'); }); };
+$('#copyCode').onclick=function(){ copy($('#classCode').textContent,'Code copied'); };
+
+route();
+})();
+</script>

@@ -1,4 +1,9 @@
-<title>Dispatcher Pro v2 EN</title>
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dispatcher Pro v2 · Port Virtual Lab</title>
+<meta name="description" content="Traffic-dispatch simulator of Port Virtual Lab (PVL.ONE), powered by Escola Europea – Intermodal Transport.">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -815,8 +820,8 @@ function finish(){ clearInterval(TIMER); var l=LV[G.level];
     .then(function(r){ G.saved=r&&r.ok?'cloud':'error:'+((r&&r.error)||'unknown'); showSaved(); })
     .catch(function(){ G.saved='error:network'; showSaved(); }); } }
 function showSaved(){ var el=$('#saveStatus'); if(!el) return;
-  var m={local:'Result saved in this browser only (no Google Sheet connected).',sending:'Saving result to the class…',cloud:'Result saved to the class results.'};
-  el.textContent=m[G.saved]||('Could not save to the class results ('+G.saved.slice(6)+'). It is kept in this browser.'); }
+  var m={local:'Result saved in this browser only (no Google Sheet connected).',sending:'Sending the result…',cloud:'Result sent. It is on the leaderboard.'};
+  el.textContent=m[G.saved]||('Could not send the result ('+G.saved.slice(6)+'). It is kept in this browser.'); }
 function resultsHtml(){ var l=LV[G.level], R=G.res, gr=DP.grade(R.acc);
   var why=R.met?'Objective met.':(R.acc<l.target?'Accuracy '+R.accPct+' % is below the '+Math.round(l.target*100)+' % target.':'')+(l.priority&&R.highMissing?' '+R.highMissing+' high-priority note(s) not correctly served.':'');
   var h='<div class="verdict '+(R.met?'win':'lose')+'"><p class="eyebrow" style="color:inherit">Level '+l.n+' · Shift #'+G.shift+'</p><h2>'+(R.met?'Level complete':'Objective not met')+'</h2>'+starsHtml(R.stars)+'<p>'+esc(why)+'</p></div>'+

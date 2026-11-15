@@ -48,6 +48,15 @@ When you change `Code.gs` later, use **Deploy → Manage deployments → Edit �
 
 Everyone using the same class code gets the same shifts, so results are comparable. **New shift** generates a different one.
 
+## 4. Reset results
+
+In the Teacher panel, under *Reset results*:
+
+- **Delete this class's results** removes every recorded game of that class from the `RESULTS` tab. It asks for confirmation, needs the class code and PIN, and cannot be undone. The class code and PIN keep working, so students can play again straight away.
+- **Clear this browser** only removes the games stored on that computer. Results already in the Sheet are untouched.
+
+Deleting rows by hand in the `RESULTS` tab works too, and is the only way to remove a single game.
+
 ## Data and privacy
 
 - Results store a nickname, never an email.

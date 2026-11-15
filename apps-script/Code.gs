@@ -9,6 +9,7 @@
  *   GET  ?action=ping
  *   GET  ?action=results&classCode=PVL-XXXX&pin=1234      → results of one class (teacher)
  *   POST {"action":"createClass","classCode","school","teacher","pin"}
+ *   POST {"action":"resetClass","classCode","pin"}        → deletes that class's result rows
  *   POST {"action":"submit","classCode","alias","level","shift","met","stars","score","acc","time","errors":{}}
  *
  * POST bodies are sent as text/plain so the browser does not need a CORS preflight.
@@ -55,6 +56,7 @@ function doPost(e) {
     var body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     if (body.action === 'submit') return json_(submit_(body));
     if (body.action === 'createClass') return json_(createClass_(body));
+    if (body.action === 'resetClass') return json_(resetClass_(body));
     return json_({ ok: false, error: 'UNKNOWN_ACTION' });
   } catch (err) {
     return json_({ ok: false, error: String(err && err.message || err) });
@@ -111,6 +113,21 @@ function getResults_(classCode, pin) {
     };
   });
   return { ok: true, results: out };
+}
+
+function resetClass_(b) {
+  var code = cleanCode_(b.classCode);
+  var cls = findClass_(code);
+  if (!cls || cls.pinHash !== hash_(code + ':' + String(b.pin || '').trim())) return { ok: false, error: 'BAD_PIN' };
+  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_RESULTS);
+  if (!sh || sh.getLastRow() < 2) return { ok: true, deleted: 0 };
+  var codes = sh.getRange(2, 2, sh.getLastRow() - 1, 1).getValues();
+  var deleted = 0;
+  // Walk upwards so deleting a row does not shift the ones still to check.
+  for (var i = codes.length - 1; i >= 0; i--) {
+    if (String(codes[i][0]).toUpperCase() === code) { sh.deleteRow(i + 2); deleted++; }
+  }
+  return { ok: true, deleted: deleted };
 }
 
 /* ---------- helpers ---------- */

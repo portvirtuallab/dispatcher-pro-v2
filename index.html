@@ -234,7 +234,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
   <div class="wrap">
     <a class="logo" href="#home" aria-label="Dispatcher Pro, home">
       <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="7" width="32" height="20" rx="2" fill="#009fe3"/><rect x="1" y="7" width="32" height="20" rx="2" fill="none" stroke="#fff" stroke-opacity=".35"/><g stroke="#0b2d63" stroke-width="2"><path d="M7 10v14M12 10v14M17 10v14M22 10v14M27 10v14"/></g><rect x="20" y="20" width="12" height="6" fill="#f9b233"/></svg>
-      <span>DISPATCHER PRO <small>Port Virtual Lab · v2 prototype</small></span>
+      <span>DISPATCHER PRO <small>Port Virtual Lab</small></span>
     </a>
     <nav class="nav" aria-label="Sections">
       <a href="#home">Play</a>
@@ -330,7 +330,6 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
       <p class="eyebrow">Teacher panel</p>
       <h2>PVL class · live results</h2>
     </div>
-    <span class="demo-badge">Prototype · includes sample data</span>
   </div>
 
   <div class="grid2">
@@ -354,6 +353,16 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
       <div class="code mono" id="classCode">PVL-7K3Q</div>
       <p class="small muted">Students join with the class code and a nickname; no email is requested. Everyone with the same code gets the same shifts, so results are comparable.</p>
       <div class="row"><button class="btn" id="copyCode" type="button">Copy class code</button></div>
+      <details>
+        <summary class="small"><b>Reset results</b></summary>
+        <div class="stack" style="margin-top:10px">
+          <p class="small muted">Deleting the results of a class cannot be undone. The class code and its PIN stay valid, so students can keep playing afterwards; only the recorded games are removed.</p>
+          <div class="row">
+            <button class="btn coral" id="resetClass" type="button">Delete this class&rsquo;s results</button>
+            <button class="btn" id="resetLocal" type="button">Clear this browser</button>
+          </div>
+        </div>
+      </details>
     </div>
     <div class="panel stack">
       <h3>Most frequent mistakes</h3>
@@ -401,7 +410,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 </section>
 </main>
 
-<footer><div class="wrap"><span>Dispatcher Pro v2 · Port Virtual Lab (PVL.ONE) · powered by Escola Europea – Intermodal Transport</span><span>Prototype for internal review</span></div></footer>
+<footer><div class="wrap"><span>Dispatcher Pro v2 · Port Virtual Lab (PVL.ONE) · powered by Escola Europea – Intermodal Transport</span><span><a href="https://www.escolaeuropea.eu" target="_blank" rel="noopener">escolaeuropea.eu</a></span></div></footer>
 <div id="toast" class="toast" hidden role="status"></div>
 <div id="modal" class="modal-back" hidden></div>
 
@@ -792,6 +801,12 @@ function bindHome(){
 function askSubmit(){ var g=G.game, l=LV[G.level], n=Object.keys(G.assign).length, nc=Object.keys(G.cust).length, miss=g.ships.length-n, m=$('#modal');
   m.innerHTML='<div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><h3 id="mt">Submit the plan?</h3><p class="small">'+(miss?miss+' delivery note(s) unassigned. ':'All delivery notes assigned. ')+(l.customs&&nc<g.ships.length?(g.ships.length-nc)+' without a customs procedure. ':'')+'Once submitted, the plan cannot be changed.</p><div class="row"><button class="btn coral" type="button" id="mYes">Submit</button><button class="btn" type="button" id="mNo">Keep reviewing</button></div></div>';
   m.hidden=false; $('#mNo').focus(); $('#mYes').onclick=function(){m.hidden=true; finish();}; $('#mNo').onclick=function(){m.hidden=true;}; }
+/* Generic confirmation dialog. onYes runs only if the teacher confirms. */
+function confirmBox(title,text,yesLabel,onYes){ var m=$('#modal');
+  m.innerHTML='<div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct"><h3 id="ct">'+esc(title)+'</h3><p class="small">'+esc(text)+'</p><div class="row"><button class="btn coral" type="button" id="cYes">'+esc(yesLabel)+'</button><button class="btn" type="button" id="cNo">Cancel</button></div></div>';
+  m.hidden=false; $('#cNo').focus();
+  $('#cYes').onclick=function(){ m.hidden=true; onYes(); };
+  $('#cNo').onclick=function(){ m.hidden=true; }; }
 
 /* ---------- Teacher panel ---------- */
 var DEMO=[
@@ -807,7 +822,9 @@ function renderTeacher(){
     :TEACH.rows?'<span class="st ok" style="padding:2px 8px;border-radius:999px;font-weight:700">Connected</span> Showing '+TEACH.rows.length+' result(s) from the Google Sheet for '+esc(TEACH.code)+'.'
     :'<span class="st warn" style="padding:2px 8px;border-radius:999px;font-weight:700">Connected</span> Enter the class code and PIN to load results.';
   var mine=(store('results')||[]).filter(function(r){return r.mine;});
-  var all=TEACH.rows?TEACH.rows:DEMO.map(function(r){r.demo=true;return r;}).concat(mine);
+  // Sample rows are only a stand-in for a class that has not been loaded yet
+  // and are never mixed with real results once the Google Sheet is connected.
+  var all=TEACH.rows?TEACH.rows:(API?mine:DEMO.map(function(r){r.demo=true;return r;}).concat(mine));
   var sel=$('#tLevel'); if(!sel.options.length){ sel.innerHTML='<option value="">All levels</option>'+LEVELS.map(function(l){return '<option value="'+l.key+'">Level '+l.n+' · '+l.name+'</option>';}).join(''); sel.onchange=renderTeacher; }
   var rows=all.filter(function(r){return !sel.value||r.level===sel.value;});
   $('#resTable').innerHTML='<thead><tr><th>Nickname</th><th>Level</th><th class="num">Shift</th><th>Objective</th><th class="num">Points</th><th class="num">Accuracy</th><th class="num">Ind. mark</th><th class="num">Time</th><th>Mistakes</th></tr></thead><tbody>'+
@@ -845,6 +862,18 @@ $('#createForm').onsubmit=function(e){ e.preventDefault(); var c=newCode(), pin=
     if(!r.ok){ toast('Could not create the class: '+r.error); return; }
     TEACH.code=c; TEACH.rows=[]; store('class',c); $('#tCode').value=c; $('#tPin').value=pin; renderTeacher(); toast('Class created: '+c); }).catch(function(){ toast('Network error: check the Apps Script URL'); }); };
 $('#copyCode').onclick=function(){ copy($('#classCode').textContent,'Code copied'); };
+$('#resetLocal').onclick=function(){
+  confirmBox('Clear this browser?','Removes the games stored on this computer. Results already sent to the class are not touched.','Clear',function(){
+    store('results',[]); toast('Games on this browser cleared'); renderTeacher(); }); };
+$('#resetClass').onclick=function(){
+  if(!API){ toast('Not connected: add the Apps Script URL to config.js'); return; }
+  var code=$('#tCode').value.trim().toUpperCase(), pin=$('#tPin').value.trim();
+  if(!code||!pin){ toast('Enter the class code and PIN first'); return; }
+  confirmBox('Delete the results of '+code+'?','Every recorded game of this class is removed from the Google Sheet. This cannot be undone. The class code and PIN keep working.','Delete results',function(){
+    apiPost({action:'resetClass',classCode:code,pin:pin}).then(function(r){
+      if(!r.ok){ toast(r.error==='BAD_PIN'?'Wrong class code or PIN':'Could not reset: '+r.error); return; }
+      TEACH.rows=[]; TEACH.code=code; renderTeacher(); toast(r.deleted+' result(s) deleted');
+    }).catch(function(){ toast('Network error: check the Apps Script URL'); }); }); };
 
 route();
 })();

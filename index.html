@@ -255,7 +255,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
   <div class="wrap">
     <a class="logo" href="#home" aria-label="Dispatcher Pro, home">
       <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="7" width="32" height="20" rx="2" fill="#009fe3"/><rect x="1" y="7" width="32" height="20" rx="2" fill="none" stroke="#fff" stroke-opacity=".35"/><g stroke="#0b2d63" stroke-width="2"><path d="M7 10v14M12 10v14M17 10v14M22 10v14M27 10v14"/></g><rect x="20" y="20" width="12" height="6" fill="#f9b233"/></svg>
-      <span>DISPATCHER PRO <small>Port Virtual Lab</small></span>
+      <span>DISPATCHER PRO <small>Port Virtual Lab · powered by Escola Europea</small></span>
     </a>
     <nav class="nav" aria-label="Sections">
       <a href="#home">Play</a>
@@ -379,32 +379,34 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
     </div>
   </div>
 
+  <div class="panel stack" id="teacherLogin" style="max-width:520px">
+    <h3>Open the results</h3>
+    <p class="small" id="connStatus"></p>
+    <form id="openForm" class="join">
+      <label for="tPin">Teacher password<input id="tPin" class="field" type="password" autocomplete="current-password" required></label>
+      <button class="btn primary" type="submit">Open results</button>
+      <button class="btn" id="lockBtn" type="button" hidden>Lock again</button>
+    </form>
+    <p class="small muted">The password lives in the <b>SETTINGS</b> tab of the Google Sheet, row <span class="mono">TEACHER_PIN</span>.</p>
+  </div>
+
+  <!-- Everything below stays hidden until the password has been accepted. -->
+  <div id="teacherBody" class="stack" style="gap:18px" hidden>
   <div class="grid2">
     <div class="panel stack">
-      <h3>Open the results</h3>
-      <p class="small" id="connStatus"></p>
-      <form id="openForm" class="join">
-        <label for="tPin">Teacher password<input id="tPin" class="field" type="password" autocomplete="current-password" required></label>
-        <button class="btn primary" type="submit">Open results</button>
-      </form>
-      <p class="small muted">The password lives in the <b>SETTINGS</b> tab of the Google Sheet, row <span class="mono">TEACHER_PIN</span>. Change it there whenever you want. It is the only thing that unlocks e-mails and the reset.</p>
-      <details>
-        <summary class="small"><b>Reset results</b></summary>
-        <div class="stack" style="margin-top:10px">
-          <p class="small muted">Deleting results cannot be undone. Students can keep playing straight afterwards; only the recorded games are removed.</p>
-          <div class="row">
-            <select id="rWindow" class="field" aria-label="What to delete">
-              <option value="hour">Last hour</option>
-              <option value="day">Last 24 hours</option>
-              <option value="week">Last week</option>
-              <option value="month">Last month</option>
-              <option value="all">Everything</option>
-            </select>
-            <button class="btn coral" id="resetClass" type="button">Delete results</button>
-            <button class="btn" id="resetLocal" type="button">Clear this browser</button>
-          </div>
-        </div>
-      </details>
+      <h3>Reset results</h3>
+      <p class="small muted">Deleting results cannot be undone. Students can keep playing straight afterwards; only the recorded games are removed.</p>
+      <div class="row">
+        <select id="rWindow" class="field" aria-label="What to delete">
+          <option value="hour">Last hour</option>
+          <option value="day">Last 24 hours</option>
+          <option value="week">Last week</option>
+          <option value="month">Last month</option>
+          <option value="all">Everything</option>
+        </select>
+        <button class="btn coral" id="resetClass" type="button">Delete results</button>
+        <button class="btn" id="resetLocal" type="button">Clear this browser</button>
+      </div>
     </div>
     <div class="panel stack">
       <h3>Most frequent mistakes</h3>
@@ -432,27 +434,16 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
       <p class="small muted">Raw points are not comparable across levels; use accuracy and whether the objective was met.</p>
     </div>
     <div class="panel stack">
-      <h3>What changes in v2</h3>
-      <ul class="small" id="changes" style="margin:0;padding-left:18px;display:grid;gap:6px"></ul>
+      <h3>Where the data lives</h3>
+      <p class="small muted">Everything is written to the <span class="mono">RESULTS</span> tab of the Google Sheet: date, school, student, e-mail, level, shift, objective met, stars, points, accuracy, time and the count of each kind of mistake. The teacher password is the <span class="mono">TEACHER_PIN</span> row of the <span class="mono">SETTINGS</span> tab.</p>
+      <p class="small muted">The public leaderboard never returns an e-mail.</p>
     </div>
   </div>
-
-  <div class="panel stack">
-    <h3>Google Sheet storage</h3>
-    <p class="small muted">The Apps Script web app writes to two tabs. Levels, drivers and routes still live in the code; moving them to the Sheet is the next step.</p>
-    <div class="tablewrap"><table>
-      <thead><tr><th>Tab</th><th>Content</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td class="mono">SETTINGS</td><td>Teacher password for the panel and the reset</td><td>Live</td></tr>
-        <tr><td class="mono">RESULTS</td><td>Timestamp, school, student, e-mail, level, shift, objective met, stars, points, accuracy, time, mistakes per rule</td><td>Live</td></tr>
-        <tr><td class="mono">LEVELS · DRIVERS · ROUTES</td><td>Game data editable from the Sheet</td><td>Next step</td></tr>
-      </tbody>
-    </table></div>
   </div>
 </section>
 </main>
 
-<footer><div class="wrap"><span>Dispatcher Pro v2 · Port Virtual Lab (PVL.ONE) · powered by Escola Europea – Intermodal Transport</span><span><a href="https://www.escolaeuropea.eu" target="_blank" rel="noopener">escolaeuropea.eu</a></span></div></footer>
+<footer><div class="wrap"><span>Dispatcher Pro · Port Virtual Lab (PVL.ONE) · powered by Escola Europea – Intermodal Transport</span><span><a href="https://www.escolaeuropea.eu" target="_blank" rel="noopener">escolaeuropea.eu</a></span></div></footer>
 <div id="toast" class="toast" hidden role="status"></div>
 <div id="modal" class="modal-back" hidden></div>
 
@@ -886,6 +877,9 @@ function renderTeacher(){
   $('#connStatus').innerHTML=!API?'<span class="demo-badge">Not connected</span> Add the Apps Script URL to config.js to collect results in the Google Sheet. Showing sample data and this browser\u2019s games.'
     :TEACH.rows?'<span class="st ok" style="padding:2px 8px;border-radius:999px;font-weight:700">Connected</span> Showing '+TEACH.rows.length+' result(s) from the Google Sheet.'
     :'<span class="st warn" style="padding:2px 8px;border-radius:999px;font-weight:700">Connected</span> Enter the teacher password to load results.';
+  // Nothing below the password form exists for a student who wanders in here.
+  $('#teacherBody').hidden=!TEACH.rows;
+  var lock=$('#lockBtn'); if(lock) lock.hidden=!TEACH.rows;
   var mine=(store('results')||[]).filter(function(r){return r.mine;});
   // Sample rows are only a stand-in for results that have not been loaded yet
   // and are never mixed with real ones once the Google Sheet is connected.
@@ -902,25 +896,13 @@ function renderTeacher(){
     var csv='school,student,email,level,shift,objective_met,stars,points,accuracy,time_s,'+Object.keys(RLABEL).join(',')+'\n'+rows.map(function(r){return [r.school,r.name||r.alias,r.email,r.level,r.shift,r.met,r.stars,r.score,r.acc,r.time].concat(Object.keys(RLABEL).map(function(k){return (r.errors||{})[k]||0;})).map(q).join(',');}).join('\n');
     var o=$('#csvOut'); o.value=csv; o.hidden=false; o.select(); copy(csv,'CSV copied'); };
   $('#bandsBody').innerHTML=[['90–100 %','9–10','Excellent mastery'],['80–89 %','8','Very competent'],['70–79 %','7','Good'],['60–69 %','5–6','Pass'],['50–59 %','4','Nearly: review key rules'],['< 50 %','0–3','Repeat with support']].map(function(b){return '<tr><td>'+b[0]+'</td><td class="num">'+b[1]+'</td><td>'+b[2]+'</td></tr>';}).join('');
-  var ch=$('#changes'); if(!ch.children.length) ch.innerHTML=[
-   'Each level has an objective and a target. The result says whether the level is complete, with 0–3 stars.',
-   'Shifts are generated from the date, so everyone playing on the same day gets the same delivery notes and the scores are comparable. A new shift is generated on request, and the generator checks that a full solution exists.',
-   'Rule-based validation: any driver who meets the requirements is valid; there is no single correct answer.',
-   'Fixed: Beginner used a flat 250 base points and could outscore Expert. Each level now uses its own base points.',
-   'Fixed: exceeding hours no longer counts as correct with a penalty; the assignment is wrong and the feedback explains why.',
-   'Fixed: trips longer than 9 h could never get a driver. They now require OVERNIGHT and take the whole shift.',
-   'Fixed: 45G1 is a 40 ft high cube. The 45 ft is L5G1 (in the v5 sheet, delivery note 1006 marked it as 45 ft).',
-   'CUSTOMS is no longer a driver qualification: it is a player task (NONE, EX-A, IM-A, T1), including exports loaded at the port.',
-   'No double penalty: an unassigned delivery note already counts as an accuracy error.',
-   'Penalties unified in CONFIG: the Recommend aid costs 5 % of base points (the guide said −80 and the sheet −45).',
-   'School, name and e-mail are stored for each game; the public leaderboard shows only name and school.'
-  ].map(function(t){return '<li>'+esc(t)+'</li>';}).join('');
 }
 $('#openForm').onsubmit=function(e){ e.preventDefault(); var pin=$('#tPin').value.trim();
   if(!API){ toast('Not connected: add the Apps Script URL to config.js'); return; }
   apiGet({action:'results',pin:pin}).then(function(r){
     if(!r.ok){ toast(r.error==='BAD_PIN'?'Wrong password':r.error==='NO_PASSWORD_SET'?'No password set yet: fill TEACHER_PIN in the SETTINGS tab':'Could not load results: '+r.error); return; }
     TEACH.rows=r.results; TEACH.pin=pin; renderTeacher(); toast(r.results.length+' result(s) loaded'); }).catch(function(){ toast('Network error: check the Apps Script URL'); }); };
+$('#lockBtn').onclick=function(){ TEACH.rows=null; TEACH.pin=null; $('#tPin').value=''; renderTeacher(); toast('Panel locked'); };
 $('#resetLocal').onclick=function(){
   confirmBox('Clear this browser?','Removes the games stored on this computer. Results already sent to the Google Sheet are not touched.','Clear',function(){
     store('results',[]); toast('Games on this browser cleared'); renderTeacher(); }); };

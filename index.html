@@ -65,6 +65,18 @@ section.view{display:grid;gap:24px}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn.coral{background:var(--coral);border-color:var(--coral);color:#fff}
 .btn:disabled{opacity:.45;cursor:not-allowed}
+/* One height for every button and field, so rows of controls line up. */
+.btn,.field{min-height:40px;box-sizing:border-box}
+.btn:focus-visible,.field:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Identity card above the levels */
+.idcard{margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface-2);display:grid;gap:10px}
+.idcard.missing{border-color:var(--coral)}
+.idcard .join label{flex:1 1 200px}
+.idcard .field{width:100%}
+/* Leaderboard toolbar */
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
+.segmented{display:flex;flex-wrap:wrap;gap:6px}
+tr.me td{background:var(--surface-2);font-weight:600}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:20px;box-shadow:var(--shadow);min-width:0}
@@ -105,7 +117,11 @@ ol.loop{padding:0;margin:0}
 .tags{display:flex;gap:5px;flex-wrap:wrap}
 
 /* Level cards */
-.lvl{display:grid;gap:10px;align-content:start}
+/* Flex column + auto margin on the button: every card ends with its Play
+   button on the same line, however long the text above it runs. */
+.lvl{display:flex;flex-direction:column;gap:10px;height:100%}
+.lvl .btn{margin-top:auto;justify-content:center;width:100%}
+.lvl p.small{margin:0}
 .lvl .head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .lvl .num{font-family:var(--f-display);font-size:2.4rem;font-weight:700;color:var(--accent);line-height:1}
 .lvl dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin:0;font-size:.88rem}
@@ -239,6 +255,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
     <nav class="nav" aria-label="Sections">
       <a href="#home">Play</a>
       <a href="#how-to-play">How to play</a>
+      <a href="#board">Leaderboard</a>
       <a href="#teacher">Teacher panel</a>
     </nav>
     <button class="themebtn" id="themeBtn" type="button" aria-label="Switch theme">◐ Theme</button>
@@ -250,6 +267,31 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 <!-- ============ HOME / PLAY ============ -->
 <section class="view" id="v-home">
   <div id="homeBody"></div>
+</section>
+
+<!-- ============ LEADERBOARD ============ -->
+<section class="view" id="v-board" hidden>
+  <div>
+    <p class="eyebrow">Leaderboard</p>
+    <h2>Best shifts</h2>
+    <p class="lead small">Ranked by points, and by time when the points tie. Names and schools only: e-mails are never shown here.</p>
+  </div>
+  <div class="panel stack">
+    <div class="toolbar">
+      <div class="segmented" id="bWindow" role="group" aria-label="Period">
+        <button class="btn" type="button" data-window="hour">Last hour</button>
+        <button class="btn" type="button" data-window="week">Last week</button>
+        <button class="btn" type="button" data-window="month">Last month</button>
+        <button class="btn" type="button" data-window="all">All time</button>
+      </div>
+      <div class="row">
+        <select id="bLevel" class="field" aria-label="Filter by level"></select>
+        <button class="btn" id="bRefresh" type="button">Refresh</button>
+      </div>
+    </div>
+    <p class="small muted" id="bStatus"></p>
+    <div class="tablewrap"><table id="bTable"></table></div>
+  </div>
 </section>
 
 <!-- ============ HOW TO PLAY ============ -->
@@ -328,37 +370,32 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
   <div class="row" style="justify-content:space-between;align-items:end">
     <div>
       <p class="eyebrow">Teacher panel</p>
-      <h2>PVL class · live results</h2>
+      <h2>Live results</h2>
     </div>
   </div>
 
   <div class="grid2">
     <div class="panel stack">
-      <h3>Your class</h3>
+      <h3>Open the results</h3>
       <p class="small" id="connStatus"></p>
       <form id="openForm" class="join">
-        <label for="tCode">Class code<input id="tCode" class="field mono" style="width:9rem" required></label>
-        <label for="tPin">Teacher PIN<input id="tPin" class="field" type="password" inputmode="numeric" style="width:8rem" required></label>
+        <label for="tPin">Teacher password<input id="tPin" class="field" type="password" autocomplete="current-password" required></label>
         <button class="btn primary" type="submit">Open results</button>
       </form>
-      <details>
-        <summary class="small"><b>Create a new class</b></summary>
-        <form id="createForm" class="stack" style="margin-top:10px">
-          <label class="small" for="cSchool"><b>School</b><input id="cSchool" class="field" required style="width:100%"></label>
-          <label class="small" for="cTeacher"><b>Teacher</b><input id="cTeacher" class="field" required style="width:100%"></label>
-          <label class="small" for="cPin"><b>Teacher PIN (4–8 digits)</b><input id="cPin" class="field" type="password" inputmode="numeric" pattern="[0-9]{4,8}" required style="width:100%"></label>
-          <div class="row"><button class="btn" type="submit">Create class</button></div>
-        </form>
-      </details>
-      <div class="code mono" id="classCode">PVL-7K3Q</div>
-      <p class="small muted">Students join with the class code and a nickname; no email is requested. Everyone with the same code gets the same shifts, so results are comparable.</p>
-      <div class="row"><button class="btn" id="copyCode" type="button">Copy class code</button></div>
+      <p class="small muted">The password lives in the <b>SETTINGS</b> tab of the Google Sheet, row <span class="mono">TEACHER_PIN</span>. Change it there whenever you want. It is the only thing that unlocks e-mails and the reset.</p>
       <details>
         <summary class="small"><b>Reset results</b></summary>
         <div class="stack" style="margin-top:10px">
-          <p class="small muted">Deleting the results of a class cannot be undone. The class code and its PIN stay valid, so students can keep playing afterwards; only the recorded games are removed.</p>
+          <p class="small muted">Deleting results cannot be undone. Students can keep playing straight afterwards; only the recorded games are removed.</p>
           <div class="row">
-            <button class="btn coral" id="resetClass" type="button">Delete this class&rsquo;s results</button>
+            <select id="rWindow" class="field" aria-label="What to delete">
+              <option value="hour">Last hour</option>
+              <option value="day">Last 24 hours</option>
+              <option value="week">Last week</option>
+              <option value="month">Last month</option>
+              <option value="all">Everything</option>
+            </select>
+            <button class="btn coral" id="resetClass" type="button">Delete results</button>
             <button class="btn" id="resetLocal" type="button">Clear this browser</button>
           </div>
         </div>
@@ -401,8 +438,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
     <div class="tablewrap"><table>
       <thead><tr><th>Tab</th><th>Content</th><th>Status</th></tr></thead>
       <tbody>
-        <tr><td class="mono">CLASSES</td><td>Class code, school, teacher, PIN (stored as a hash), created</td><td>Live</td></tr>
-        <tr><td class="mono">RESULTS</td><td>Timestamp, class, nickname, level, shift, objective met, stars, points, accuracy, time, mistakes per rule</td><td>Live</td></tr>
+        <tr><td class="mono">SETTINGS</td><td>Teacher password for the panel and the reset</td><td>Live</td></tr>
+        <tr><td class="mono">RESULTS</td><td>Timestamp, school, student, e-mail, level, shift, objective met, stars, points, accuracy, time, mistakes per rule</td><td>Live</td></tr>
         <tr><td class="mono">LEVELS · DRIVERS · ROUTES</td><td>Game data editable from the Sheet</td><td>Next step</td></tr>
       </tbody>
     </table></div>
@@ -638,7 +675,7 @@ var API=(window.DP_CONFIG&&window.DP_CONFIG.API_URL)||'';
 function apiGet(params){ var q=Object.keys(params).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k]);}).join('&');
   return fetch(API+'?'+q).then(function(r){return r.json();}); }
 function apiPost(body){ return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(function(r){return r.json();}); }
-var TEACH={rows:null,code:null};
+var TEACH={rows:null,pin:null};
 var REASON={
   BASE:'The driver is not based at the departure point of the delivery note.',
   SIZE:'The driver is not qualified for this container size. Check the first character of the ISO code.',
@@ -659,16 +696,28 @@ function reqTags(s){ var r=DP.reqs(s); var t='<span class="tag">'+r.size+'</span
 function prioTag(p){ return '<span class="tag '+p+'">'+({H:'High',M:'Medium',L:'Low'}[p])+'</span>'; }
 function starsHtml(n){ var h=''; for(var i=1;i<=3;i++) h+='<span class="'+(i<=n?'':'off')+'">★</span>'; return '<span class="stars" aria-label="'+n+' of 3 stars">'+h+'</span>'; }
 function mmss(s){ return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
-function classCode(){ return store('class')||'PVL-7K3Q'; }
+/* ---------- Who is playing ---------- */
+function student(){ var s=store('student')||{}; return {school:s.school||'',name:s.name||'',email:s.email||''}; }
+function validEmail(s){ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(s||'').trim()); }
+function studentReady(){ var s=student(); return !!(s.school&&s.name&&validEmail(s.email)); }
+function identityHtml(){ var s=student();
+  return '<div class="idcard" id="idCard"><p class="eyebrow">Before you start</p>'+
+   '<div class="join"><label for="inSchool">School<input id="inSchool" class="field" autocomplete="organization" value="'+esc(s.school)+'"></label>'+
+   '<label for="inName">Name and surname<input id="inName" class="field" autocomplete="name" value="'+esc(s.name)+'"></label>'+
+   '<label for="inEmail">E-mail<input id="inEmail" class="field" type="email" autocomplete="email" value="'+esc(s.email)+'"></label></div>'+
+   '<p class="small muted" id="idHint">'+(studentReady()?'Ready. Pick a level below.':'Fill in the three fields to start playing.')+'</p></div>'; }
+/* The shift is seeded from the day, so everyone playing on the same date gets
+   the same delivery notes and the scores stay comparable. */
+function daySeed(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
 function shiftNo(k){ var m=store('shifts')||{}; return m[k]||1; }
 function setShift(k,n){ var m=store('shifts')||{}; m[k]=n; store('shifts',m); }
 
 /* ---------- Router ---------- */
-var VIEWS=['home','how-to-play','teacher'];
+var VIEWS=['home','board','how-to-play','teacher'];
 function route(){ var h=(location.hash||'#home').slice(1); if(VIEWS.indexOf(h)<0) h='home';
   VIEWS.forEach(function(v){ $('#v-'+v).hidden=(v!==h); });
   $$('.nav a').forEach(function(a){ if(a.getAttribute('href')==='#'+h) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
-  if(h==='teacher') renderTeacher(); if(h==='home') renderHome();
+  if(h==='teacher') renderTeacher(); if(h==='home') renderHome(); if(h==='board') loadBoard();
   window.scrollTo(0,0); }
 window.addEventListener('hashchange',route);
 
@@ -697,7 +746,7 @@ function renderHome(){ var b=$('#homeBody');
 function menuHtml(){
   var h='<div class="hero"><div><p class="eyebrow">PVL.ONE · Escola Europea</p><h1>You are the traffic manager. Get every container out on the right truck.</h1>'+
    '<p class="lead">Each shift is a set of delivery notes leaving Barcelona and Valencia. Read the container and the cargo, assign a qualified driver within their hours and, at the higher levels, choose the customs procedure. Every level has an objective you must meet to complete it.</p>'+
-   '<div class="join" style="margin-top:18px"><label for="inCode">Class code<input id="inCode" class="field mono" value="'+esc(classCode())+'" style="width:9rem"></label><label for="inAlias">Nickname<input id="inAlias" class="field" placeholder="e.g. Red-Crane" value="'+esc(store('alias')||'')+'"></label><a class="btn" href="#how-to-play">How to play</a></div></div>'+
+   identityHtml()+'</div>'+
    '<div class="yard"><p class="eyebrow">Sample delivery note</p>'+plate({cont:'SDGU3304092',iso:'42G1'})+'<div class="small"><b>Port of Barcelona · South Terminal</b> → <b>Zaragoza · PLAZA customs warehouse</b> · 310 km</div><div class="small muted">Electronic components · origin China</div>'+
    '<div class="chain"><div><b>Clue</b><span>42G1, non-EU origin, delivery to a customs warehouse</span></div><div><b>Requirement</b><span>40 ft driver based in Barcelona · T1 procedure</span></div><div><b>Decision</b><span>Assign a driver who is not needed for a scarcer service</span></div></div></div></div>';
   h+='<div class="grid4">'+LEVELS.map(function(l){ var best=bestOf(l.key);
@@ -706,10 +755,10 @@ function menuHtml(){
      '<dl><dt>Delivery notes</dt><dd>'+l.ships+'</dd><dt>Time</dt><dd>'+(l.time/60)+' min</dd><dt>Base points</dt><dd>'+fmt(l.points)+'</dd><dt>Best</dt><dd>'+(best?starsHtml(best.stars).replace('class="stars"','class="stars" style="font-size:1rem"')+' '+fmt(best.score)+' pts':'—')+'</dd></dl>'+
      '<p class="small"><b>What changes:</b> '+esc(l.adds)+'</p><button class="btn primary" type="button" data-level="'+l.key+'">Play level '+l.n+'</button></div>'; }).join('')+'</div>';
   return h; }
-function newGame(k,n){ var code=classCode(); var g=generate(k,code+'|'+k+'|'+n); G={stage:'brief',level:k,shift:n,game:g}; }
+function newGame(k,n){ var g=generate(k,daySeed()+'|'+k+'|'+n); G={stage:'brief',level:k,shift:n,game:g}; }
 function briefHtml(){ var l=LV[G.level], g=G.game;
   return '<div class="mission"><span class="flag">Objective</span><p>'+esc(l.objective)+'</p><span class="target">Target '+Math.round(l.target*100)+' %'+(l.priority?' + high priority':'')+'</span></div>'+
-   '<div class="panel stack"><p class="eyebrow">Level '+l.n+' · '+l.name+' · Shift #'+G.shift+' · class '+esc(classCode())+'</p><h2>Shift briefing</h2>'+
+   '<div class="panel stack"><p class="eyebrow">Level '+l.n+' · '+l.name+' · Shift #'+G.shift+' · '+esc(student().name||'player')+'</p><h2>Shift briefing</h2>'+
    '<p class="muted">'+g.ships.length+' delivery notes, '+g.drivers.length+' drivers on duty, '+(l.time/60)+' minutes. The clock starts when you press Start shift.</p>'+
    '<div class="tablewrap"><table><thead><tr><th>Rule in play</th><th>At this level</th></tr></thead><tbody>'+
    '<tr><td>Requirement labels</td><td>'+(l.labels?'Visible':'Hidden: infer them from the ISO code and the cargo')+'</td></tr>'+
@@ -758,10 +807,11 @@ function drawPlay(){ var l=LV[G.level], g=G.game, L=loads(), n=Object.keys(G.ass
       (l.labels&&why.length&&!mine?'<div class="why">Does not meet: '+why.map(function(w){return RLABEL[w]||w;}).join(', ')+'</div>':'')+'</button>'; }).join(''); }
 function finish(){ clearInterval(TIMER); var l=LV[G.level];
   G.res=DP.evaluate(l,G.game,G.assign,G.cust,G.usage,elapsed());
-  var all=store('results')||[]; all.push({alias:store('alias')||'You',level:l.key,shift:G.shift,score:G.res.score,acc:G.res.accPct,met:G.res.met,stars:G.res.stars,time:G.res.elapsed,errors:G.res.rows.reduce(function(o,r){r.errors.forEach(function(e){o[e]=(o[e]||0)+1;});return o;},{}),mine:true});
+  var me=student();
+  var all=store('results')||[]; all.push({name:me.name||'You',school:me.school,email:me.email,level:l.key,shift:G.shift,score:G.res.score,acc:G.res.accPct,met:G.res.met,stars:G.res.stars,time:G.res.elapsed,errors:G.res.rows.reduce(function(o,r){r.errors.forEach(function(e){o[e]=(o[e]||0)+1;});return o;},{}),mine:true});
   store('results',all.slice(-60)); G.stage='results'; G.saved=API?'sending':'local'; renderHome();
   if(API){ var last=all[all.length-1];
-    apiPost({action:'submit',classCode:classCode(),alias:last.alias,level:last.level,shift:last.shift,met:last.met,stars:last.stars,score:last.score,acc:last.acc,time:last.time,errors:last.errors})
+    apiPost({action:'submit',school:last.school,name:last.name,email:last.email,level:last.level,shift:last.shift,met:last.met,stars:last.stars,score:last.score,acc:last.acc,time:last.time,errors:last.errors})
     .then(function(r){ G.saved=r&&r.ok?'cloud':'error:'+((r&&r.error)||'unknown'); showSaved(); })
     .catch(function(){ G.saved='error:network'; showSaved(); }); } }
 function showSaved(){ var el=$('#saveStatus'); if(!el) return;
@@ -771,15 +821,27 @@ function resultsHtml(){ var l=LV[G.level], R=G.res, gr=DP.grade(R.acc);
   var why=R.met?'Objective met.':(R.acc<l.target?'Accuracy '+R.accPct+' % is below the '+Math.round(l.target*100)+' % target.':'')+(l.priority&&R.highMissing?' '+R.highMissing+' high-priority note(s) not correctly served.':'');
   var h='<div class="verdict '+(R.met?'win':'lose')+'"><p class="eyebrow" style="color:inherit">Level '+l.n+' · Shift #'+G.shift+'</p><h2>'+(R.met?'Level complete':'Objective not met')+'</h2>'+starsHtml(R.stars)+'<p>'+esc(why)+'</p></div>'+
    '<div class="kpis"><div class="kpi"><b>'+fmt(R.score)+'</b><span>Points · base '+fmt(l.points)+'</span></div><div class="kpi"><b>'+R.accPct+' %</b><span>Accuracy · target '+Math.round(l.target*100)+' %</span></div><div class="kpi"><b>'+gr.mark+'</b><span>Indicative mark (0–10) · '+esc(gr.label)+'</span></div><div class="kpi"><b class="mono">'+mmss(R.elapsed)+'</b><span>Time · bonus +'+R.bonus+(R.pen?' · penalties −'+R.pen:'')+'</span></div></div>'+
-   '<p class="small muted" id="saveStatus" aria-live="polite"></p><div class="row"><button class="btn primary" type="button" id="retryBtn">Replay this shift</button><button class="btn" type="button" id="newShiftBtn">New shift</button>'+(R.met&&l.n<4?'<button class="btn coral" type="button" data-level="'+LEVELS[l.n].key+'">Next level: '+LEVELS[l.n].name+'</button>':'')+'<button class="btn" type="button" data-menu>All levels</button></div>';
+   '<p class="small muted" id="saveStatus" aria-live="polite"></p><div class="row"><button class="btn primary" type="button" id="retryBtn">Replay this shift</button><button class="btn" type="button" id="newShiftBtn">New shift</button>'+(R.met&&l.n<4?'<button class="btn coral" type="button" data-level="'+LEVELS[l.n].key+'">Next level: '+LEVELS[l.n].name+'</button>':'')+'<button class="btn" type="button" data-menu>All levels</button><a class="btn" href="#board">See the leaderboard</a></div>';
   h+='<div class="panel stack"><h3>Feedback per delivery note</h3><div>'+R.rows.map(function(r){ var s=shipById(r.alb), good=!r.errors.length;
     var msgs=r.errors.map(function(e){ return e==='CUSTOMS'?'Customs procedure: you chose '+(r.custGiven||'none')+', the correct one was '+r.custExpected+'.':REASON[e]; });
     return '<div class="fbrow"><span class="st '+(good?'ok':r.errors.indexOf('UNASSIGNED')>=0?'warn':'bad')+'">'+(good?'Correct':'Review')+'</span><div><b class="mono">'+r.alb+'</b>'+(l.priority?' '+prioTag(s.prio):'')+' · '+esc(BASES[s.base])+' → '+esc(s.to)+' · '+(r.driver?esc(DRV[r.driver].name):'no driver')+(l.customs?' · '+esc(r.custGiven||'—'):'')+
       (msgs.length?'<ul class="small" style="margin:4px 0 0;padding-left:18px">'+msgs.map(function(m){return '<li>'+esc(m)+'</li>';}).join('')+'</ul>':'')+'</div></div>'; }).join('')+'</div></div>';
   return h; }
-function saveJoin(){ var c=$('#inCode'), a=$('#inAlias'); if(c) store('class',c.value.trim().toUpperCase()||'PVL-7K3Q'); if(a) store('alias',a.value.trim()||'Anonymous'); }
+function saveJoin(){ var sc=$('#inSchool'), nm=$('#inName'), em=$('#inEmail');
+  if(!sc&&!nm&&!em) return studentReady();
+  store('student',{school:(sc?sc.value:'').trim(),name:(nm?nm.value:'').trim(),email:(em?em.value:'').trim().toLowerCase()});
+  var ok=studentReady(), hint=$('#idHint'), card=$('#idCard');
+  if(hint) hint.textContent=ok?'Ready. Pick a level below.':'Fill in the three fields to start playing.';
+  if(card) card.classList.toggle('missing',!ok);
+  return ok; }
 function bindHome(){
-  $$('[data-level]').forEach(function(b){ b.onclick=function(){ saveJoin(); var k=b.getAttribute('data-level'); newGame(k,shiftNo(k)); renderHome(); window.scrollTo(0,0); }; });
+  $$('#inSchool,#inName,#inEmail').forEach(function(f){ f.oninput=saveJoin; });
+  $$('[data-level]').forEach(function(b){ b.onclick=function(){
+    if(!saveJoin()){ toast('School, name and a valid e-mail are needed before playing');
+      var f=$('#inSchool'); if(f&&!f.value.trim()) f.focus(); else { f=$('#inName'); if(f&&!f.value.trim()) f.focus(); else { f=$('#inEmail'); if(f) f.focus(); } }
+      var card=$('#idCard'); if(card){ card.classList.add('missing'); card.scrollIntoView({block:'center'}); }
+      return; }
+    var k=b.getAttribute('data-level'); newGame(k,shiftNo(k)); renderHome(); window.scrollTo(0,0); }; });
   $$('[data-menu]').forEach(function(b){ b.onclick=function(){ G={stage:'menu'}; renderHome(); }; });
   showSaved();
   var sb=$('#startBtn'); if(sb) sb.onclick=startPlay;
@@ -816,29 +878,28 @@ var DEMO=[
  {alias:'Draught',level:'advanced',shift:1,score:341,acc:63,met:false,stars:0,time:720,errors:{CUSTOMS:7,HOURS:1,UNASSIGNED:3}},{alias:'Red-Crane',level:'advanced',shift:1,score:560,acc:93,met:true,stars:2,time:540,errors:{CUSTOMS:2}},
  {alias:'Mooring',level:'expert',shift:1,score:928,acc:86,met:true,stars:1,time:781,errors:{CUSTOMS:5,HOURS:2}},{alias:'Reefer-23',level:'expert',shift:1,score:612,acc:62,met:false,stars:0,time:900,errors:{UNASSIGNED:6,CUSTOMS:9,REEFER:2,BASE:1}}];
 function renderTeacher(){
-  $('#classCode').textContent=TEACH.code||classCode();
-  if(!$('#tCode').value) $('#tCode').value=TEACH.code||classCode();
   $('#connStatus').innerHTML=!API?'<span class="demo-badge">Not connected</span> Add the Apps Script URL to config.js to collect results in the Google Sheet. Showing sample data and this browser\u2019s games.'
-    :TEACH.rows?'<span class="st ok" style="padding:2px 8px;border-radius:999px;font-weight:700">Connected</span> Showing '+TEACH.rows.length+' result(s) from the Google Sheet for '+esc(TEACH.code)+'.'
-    :'<span class="st warn" style="padding:2px 8px;border-radius:999px;font-weight:700">Connected</span> Enter the class code and PIN to load results.';
+    :TEACH.rows?'<span class="st ok" style="padding:2px 8px;border-radius:999px;font-weight:700">Connected</span> Showing '+TEACH.rows.length+' result(s) from the Google Sheet.'
+    :'<span class="st warn" style="padding:2px 8px;border-radius:999px;font-weight:700">Connected</span> Enter the teacher password to load results.';
   var mine=(store('results')||[]).filter(function(r){return r.mine;});
-  // Sample rows are only a stand-in for a class that has not been loaded yet
-  // and are never mixed with real results once the Google Sheet is connected.
+  // Sample rows are only a stand-in for results that have not been loaded yet
+  // and are never mixed with real ones once the Google Sheet is connected.
   var all=TEACH.rows?TEACH.rows:(API?mine:DEMO.map(function(r){r.demo=true;return r;}).concat(mine));
   var sel=$('#tLevel'); if(!sel.options.length){ sel.innerHTML='<option value="">All levels</option>'+LEVELS.map(function(l){return '<option value="'+l.key+'">Level '+l.n+' · '+l.name+'</option>';}).join(''); sel.onchange=renderTeacher; }
   var rows=all.filter(function(r){return !sel.value||r.level===sel.value;});
-  $('#resTable').innerHTML='<thead><tr><th>Nickname</th><th>Level</th><th class="num">Shift</th><th>Objective</th><th class="num">Points</th><th class="num">Accuracy</th><th class="num">Ind. mark</th><th class="num">Time</th><th>Mistakes</th></tr></thead><tbody>'+
+  $('#resTable').innerHTML='<thead><tr><th>Student</th><th>School</th><th>E-mail</th><th>Level</th><th>Objective</th><th class="num">Points</th><th class="num">Accuracy</th><th class="num">Ind. mark</th><th class="num">Time</th><th>Mistakes</th></tr></thead><tbody>'+
    rows.map(function(r){ var errs=Object.keys(r.errors||{}).map(function(k){return RLABEL[k]+' ×'+r.errors[k];}).join(', ');
-     return '<tr><td>'+esc(r.alias)+(r.demo?' <span class="demo-badge">sample</span>':'')+'</td><td>'+LV[r.level].n+' · '+LV[r.level].name+'</td><td class="num">#'+r.shift+'</td><td>'+(r.met?'<span class="st ok" style="padding:2px 8px;border-radius:999px;font-size:.78rem;font-weight:700">Met '+'★'.repeat(r.stars)+'</span>':'<span class="st bad" style="padding:2px 8px;border-radius:999px;font-size:.78rem;font-weight:700">Not met</span>')+'</td><td class="num">'+fmt(r.score)+'</td><td class="num">'+r.acc+' %</td><td class="num">'+DP.grade(r.acc/100).mark+'</td><td class="num mono">'+mmss(r.time)+'</td><td class="small">'+(errs||'—')+'</td></tr>'; }).join('')+'</tbody>';
+     return '<tr><td>'+esc(r.name||r.alias||'')+(r.demo?' <span class="demo-badge">sample</span>':'')+'</td><td>'+esc(r.school||'—')+'</td><td class="small mono">'+esc(r.email||'—')+'</td><td>'+LV[r.level].n+' · '+LV[r.level].name+'</td><td>'+(r.met?'<span class="st ok" style="padding:2px 8px;border-radius:999px;font-size:.78rem;font-weight:700">Met '+'★'.repeat(r.stars)+'</span>':'<span class="st bad" style="padding:2px 8px;border-radius:999px;font-size:.78rem;font-weight:700">Not met</span>')+'</td><td class="num">'+fmt(r.score)+'</td><td class="num">'+r.acc+' %</td><td class="num">'+DP.grade(r.acc/100).mark+'</td><td class="num mono">'+mmss(r.time)+'</td><td class="small">'+(errs||'—')+'</td></tr>'; }).join('')+'</tbody>';
   var tot={}; rows.forEach(function(r){Object.keys(r.errors||{}).forEach(function(k){tot[k]=(tot[k]||0)+r.errors[k];});});
   var keys=Object.keys(tot).sort(function(a,b){return tot[b]-tot[a];}), mx=keys.length?tot[keys[0]]:1;
   $('#errBars').innerHTML=keys.length?keys.map(function(k){return '<div class="bar"><span>'+RLABEL[k]+'</span><span class="t"><i style="width:'+(100*tot[k]/mx)+'%"></i></span><span class="mono">'+tot[k]+'</span></div>';}).join(''):'<p class="small muted">No mistakes recorded for this filter.</p>';
-  $('#copyCsv').onclick=function(){ var csv='nickname,level,shift,objective_met,stars,points,accuracy,time_s,'+Object.keys(RLABEL).join(',')+'\n'+rows.map(function(r){return [r.alias,r.level,r.shift,r.met,r.stars,r.score,r.acc,r.time].concat(Object.keys(RLABEL).map(function(k){return (r.errors||{})[k]||0;})).join(',');}).join('\n');
+  $('#copyCsv').onclick=function(){ var q=function(v){ var s=String(v==null?'':v); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; };
+    var csv='school,student,email,level,shift,objective_met,stars,points,accuracy,time_s,'+Object.keys(RLABEL).join(',')+'\n'+rows.map(function(r){return [r.school,r.name||r.alias,r.email,r.level,r.shift,r.met,r.stars,r.score,r.acc,r.time].concat(Object.keys(RLABEL).map(function(k){return (r.errors||{})[k]||0;})).map(q).join(',');}).join('\n');
     var o=$('#csvOut'); o.value=csv; o.hidden=false; o.select(); copy(csv,'CSV copied'); };
   $('#bandsBody').innerHTML=[['90–100 %','9–10','Excellent mastery'],['80–89 %','8','Very competent'],['70–79 %','7','Good'],['60–69 %','5–6','Pass'],['50–59 %','4','Nearly: review key rules'],['< 50 %','0–3','Repeat with support']].map(function(b){return '<tr><td>'+b[0]+'</td><td class="num">'+b[1]+'</td><td>'+b[2]+'</td></tr>';}).join('');
   var ch=$('#changes'); if(!ch.children.length) ch.innerHTML=[
    'Each level has an objective and a target. The result says whether the level is complete, with 0–3 stars.',
-   'Shifts are generated from the class code, so every student in a class plays the same shift. A new shift is generated on request, and the generator checks that a full solution exists.',
+   'Shifts are generated from the date, so everyone playing on the same day gets the same delivery notes and the scores are comparable. A new shift is generated on request, and the generator checks that a full solution exists.',
    'Rule-based validation: any driver who meets the requirements is valid; there is no single correct answer.',
    'Fixed: Beginner used a flat 250 base points and could outscore Expert. Each level now uses its own base points.',
    'Fixed: exceeding hours no longer counts as correct with a penalty; the assignment is wrong and the feedback explains why.',
@@ -847,33 +908,48 @@ function renderTeacher(){
    'CUSTOMS is no longer a driver qualification: it is a player task (NONE, EX-A, IM-A, T1), including exports loaded at the port.',
    'No double penalty: an unassigned delivery note already counts as an accuracy error.',
    'Penalties unified in CONFIG: the Recommend aid costs 5 % of base points (the guide said −80 and the sheet −45).',
-   'Nickname and class code instead of the student’s email.'
+   'School, name and e-mail are stored for each game; the public leaderboard shows only name and school.'
   ].map(function(t){return '<li>'+esc(t)+'</li>';}).join('');
 }
-function newCode(){ var a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', c='PVL-'; for(var i=0;i<4;i++) c+=a[Math.floor(Math.random()*a.length)]; return c; }
-$('#openForm').onsubmit=function(e){ e.preventDefault(); var code=$('#tCode').value.trim().toUpperCase(), pin=$('#tPin').value.trim();
+$('#openForm').onsubmit=function(e){ e.preventDefault(); var pin=$('#tPin').value.trim();
   if(!API){ toast('Not connected: add the Apps Script URL to config.js'); return; }
-  apiGet({action:'results',classCode:code,pin:pin}).then(function(r){
-    if(!r.ok){ toast(r.error==='BAD_PIN'?'Wrong class code or PIN':'Could not load results: '+r.error); return; }
-    TEACH.rows=r.results; TEACH.code=code; renderTeacher(); toast('Results loaded'); }).catch(function(){ toast('Network error: check the Apps Script URL'); }); };
-$('#createForm').onsubmit=function(e){ e.preventDefault(); var c=newCode(), pin=$('#cPin').value.trim();
-  if(!API){ $('#classCode').textContent=c; store('class',c); toast('Local class code: '+c+' (not connected)'); return; }
-  apiPost({action:'createClass',classCode:c,school:$('#cSchool').value.trim(),teacher:$('#cTeacher').value.trim(),pin:pin}).then(function(r){
-    if(!r.ok){ toast('Could not create the class: '+r.error); return; }
-    TEACH.code=c; TEACH.rows=[]; store('class',c); $('#tCode').value=c; $('#tPin').value=pin; renderTeacher(); toast('Class created: '+c); }).catch(function(){ toast('Network error: check the Apps Script URL'); }); };
-$('#copyCode').onclick=function(){ copy($('#classCode').textContent,'Code copied'); };
+  apiGet({action:'results',pin:pin}).then(function(r){
+    if(!r.ok){ toast(r.error==='BAD_PIN'?'Wrong password':'Could not load results: '+r.error); return; }
+    TEACH.rows=r.results; TEACH.pin=pin; renderTeacher(); toast(r.results.length+' result(s) loaded'); }).catch(function(){ toast('Network error: check the Apps Script URL'); }); };
 $('#resetLocal').onclick=function(){
-  confirmBox('Clear this browser?','Removes the games stored on this computer. Results already sent to the class are not touched.','Clear',function(){
+  confirmBox('Clear this browser?','Removes the games stored on this computer. Results already sent to the Google Sheet are not touched.','Clear',function(){
     store('results',[]); toast('Games on this browser cleared'); renderTeacher(); }); };
 $('#resetClass').onclick=function(){
   if(!API){ toast('Not connected: add the Apps Script URL to config.js'); return; }
-  var code=$('#tCode').value.trim().toUpperCase(), pin=$('#tPin').value.trim();
-  if(!code||!pin){ toast('Enter the class code and PIN first'); return; }
-  confirmBox('Delete the results of '+code+'?','Every recorded game of this class is removed from the Google Sheet. This cannot be undone. The class code and PIN keep working.','Delete results',function(){
-    apiPost({action:'resetClass',classCode:code,pin:pin}).then(function(r){
-      if(!r.ok){ toast(r.error==='BAD_PIN'?'Wrong class code or PIN':'Could not reset: '+r.error); return; }
-      TEACH.rows=[]; TEACH.code=code; renderTeacher(); toast(r.deleted+' result(s) deleted');
+  var pin=$('#tPin').value.trim(), win=$('#rWindow').value, label=$('#rWindow').selectedOptions[0].textContent.toLowerCase();
+  if(!pin){ toast('Enter the teacher password first'); return; }
+  confirmBox('Delete the results of '+label+'?','Those games are removed from the Google Sheet and cannot be recovered. Students can keep playing straight afterwards.','Delete results',function(){
+    apiPost({action:'reset',pin:pin,window:win}).then(function(r){
+      if(!r.ok){ toast(r.error==='BAD_PIN'?'Wrong password':'Could not reset: '+r.error); return; }
+      toast(r.deleted+' result(s) deleted');
+      apiGet({action:'results',pin:pin}).then(function(x){ TEACH.rows=x.ok?x.results:[]; renderTeacher(); });
     }).catch(function(){ toast('Network error: check the Apps Script URL'); }); }); };
+
+/* ---------- Leaderboard ---------- */
+var BOARD={window:'hour',level:''};
+function loadBoard(){
+  var sel=$('#bLevel'); if(!sel.options.length){ sel.innerHTML='<option value="">All levels</option>'+LEVELS.map(function(l){return '<option value="'+l.key+'">Level '+l.n+' · '+l.name+'</option>';}).join(''); }
+  sel.value=BOARD.level;
+  $$('#bWindow [data-window]').forEach(function(b){ b.classList.toggle('primary',b.getAttribute('data-window')===BOARD.window); });
+  if(!API){ $('#bStatus').textContent='Not connected: add the Apps Script URL to config.js to share a leaderboard.'; $('#bTable').innerHTML=''; return; }
+  $('#bStatus').textContent='Loading…';
+  apiGet({action:'leaderboard',window:BOARD.window,level:BOARD.level}).then(function(r){
+    if(!r.ok){ $('#bStatus').textContent='Could not load the leaderboard: '+r.error; return; }
+    drawBoard(r.results); }).catch(function(){ $('#bStatus').textContent='Network error: check the Apps Script URL'; }); }
+function drawBoard(rows){
+  var me=student();
+  $('#bStatus').textContent=rows.length?rows.length+' game(s) in this period.':'No games in this period yet. Play one and it shows up here.';
+  $('#bTable').innerHTML=rows.length?'<thead><tr><th class="num">#</th><th>Student</th><th>School</th><th>Level</th><th class="num">Points</th><th class="num">Accuracy</th><th>Objective</th><th class="num">Time</th></tr></thead><tbody>'+
+   rows.map(function(r,i){ var mine=me.name&&r.name===me.name&&r.school===me.school;
+     return '<tr'+(mine?' class="me"':'')+'><td class="num">'+(i+1)+'</td><td>'+esc(r.name)+(mine?' <span class="demo-badge">you</span>':'')+'</td><td>'+esc(r.school)+'</td><td>'+LV[r.level].n+' · '+LV[r.level].name+'</td><td class="num"><b>'+fmt(r.score)+'</b></td><td class="num">'+r.acc+' %</td><td>'+(r.met?'<span class="st ok" style="padding:2px 8px;border-radius:999px;font-size:.78rem;font-weight:700">Met '+'★'.repeat(r.stars)+'</span>':'<span class="st bad" style="padding:2px 8px;border-radius:999px;font-size:.78rem;font-weight:700">Not met</span>')+'</td><td class="num mono">'+mmss(r.time)+'</td></tr>'; }).join('')+'</tbody>':''; }
+$$('#bWindow [data-window]').forEach(function(b){ b.onclick=function(){ BOARD.window=b.getAttribute('data-window'); loadBoard(); }; });
+$('#bLevel').onchange=function(){ BOARD.level=$('#bLevel').value; loadBoard(); };
+$('#bRefresh').onclick=loadBoard;
 
 route();
 })();

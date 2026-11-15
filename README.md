@@ -33,36 +33,40 @@ Without step 2 the game already works, but results are kept only in each student
 
 1. Create a new Google Sheet, for example **DispatcherPRO_V2_DATA**, with the Escola Europea account that should own the data.
 2. In the Sheet, open **Extensions → Apps Script**. Delete the sample code and paste the whole content of `apps-script/Code.gs`. Save.
-3. In the function selector choose **setup** and click **Run**. Accept the permissions. The tabs `CLASSES` and `RESULTS` are created.
+3. In the function selector choose **setup** and click **Run**. Accept the permissions. The tabs `RESULTS` and `SETTINGS` are created.
 4. Click **Deploy → New deployment**. Type: **Web app**. *Execute as*: **Me**. *Who has access*: **Anyone**. Click **Deploy** and copy the **Web app URL** (it ends in `/exec`).
 5. In GitHub, edit `config.js` and paste the URL into `API_URL`. Commit.
 6. Test it: open `<Web app URL>?action=ping` in the browser. You should see `{"ok":true,...}`.
 
 When you change `Code.gs` later, use **Deploy → Manage deployments → Edit → Version: New version** so the URL stays the same.
 
-## 3. Use it in class
+## 3. Set the teacher password
 
-1. Teacher: open the game → **Teacher panel** → *Create a new class* (school, teacher, 4–8 digit PIN). You get a class code such as `PVL-7K3Q`.
-2. Students: open the game, type the class code and a nickname, and play. No email is requested.
-3. Teacher: in the Teacher panel, enter the class code and PIN → **Open results**. You see each game, whether the objective was met, the most frequent mistakes, and can copy the results as CSV.
+Open the `SETTINGS` tab of the Sheet. The row `TEACHER_PIN` starts as `changeme`: type your own password in the `VALUE` cell, 8 characters or more. Nothing else to do — the Web app reads it on every request, so a change takes effect at once.
 
-Everyone using the same class code gets the same shifts, so results are comparable. **New shift** generates a different one.
+That password is the only thing that unlocks the e-mails and the reset. The leaderboard needs no password.
 
-## 4. Reset results
+## 4. Use it in class
 
-In the Teacher panel, under *Reset results*:
+1. Students open the game, fill in **school, name and e-mail**, and pick a level. There is no class code.
+2. Everyone playing on the same date gets the same delivery notes, so the scores are comparable. **New shift** generates a different one.
+3. **Leaderboard** is open to everyone: best shifts of the last hour, week or month, or all time, filterable by level. It shows name and school, never an e-mail.
+4. **Teacher panel** → type the password → **Open results**: every game with its e-mail, the most frequent mistakes, and a CSV to copy.
 
-- **Delete this class's results** removes every recorded game of that class from the `RESULTS` tab. It asks for confirmation, needs the class code and PIN, and cannot be undone. The class code and PIN keep working, so students can play again straight away.
-- **Clear this browser** only removes the games stored on that computer. Results already in the Sheet are untouched.
+## 5. Reset results
 
-Deleting rows by hand in the `RESULTS` tab works too, and is the only way to remove a single game.
+In the Teacher panel, under *Reset results*, pick a period (last hour, 24 hours, week, month, or everything) and press **Delete results**. It asks for confirmation, needs the password, and cannot be undone. Students can keep playing straight afterwards.
+
+**Clear this browser** only removes the games stored on that computer; the Sheet is untouched. Deleting rows by hand in `RESULTS` works too, and is the only way to remove a single game.
 
 ## Data and privacy
 
-- Results store a nickname, never an email.
-- Teacher PINs are stored as a SHA-256 hash in the `CLASSES` tab.
-- To close a class, set its `Active` cell in `CLASSES` to `FALSE`; new results for that class are rejected.
-- The Web app accepts results from anyone who has its URL. It only accepts known class codes and validates every field.
+**Each game stores the student's school, name and e-mail.** That makes the `RESULTS` tab a file of personal data, and most players are minors, so before running it with a class make sure your school has a legal basis for the processing, tells students and families what is collected and why, and sets a date to delete it. Deleting is one button: Teacher panel → *Reset results* → *Everything*.
+
+- The public leaderboard shows name and school. E-mails are never returned by that endpoint, only by the password-protected one.
+- The teacher password is stored in plain text in the `SETTINGS` tab, which only people with access to the Sheet can read. Use 8 characters or more: it is sent over HTTPS but a short one can be guessed by trying.
+- The Web app accepts results from anyone who has its URL, and validates every field. A determined student can therefore post a made-up score; this is a classroom game, not an exam.
+- Nothing is stored outside the Google Sheet. The browser also keeps the last 60 games locally so a student sees their own history.
 
 ## Simulation rules
 

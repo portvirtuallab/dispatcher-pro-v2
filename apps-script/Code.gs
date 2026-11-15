@@ -41,10 +41,21 @@ function setup() {
   }
 }
 
+/**
+ * Creates the tab if it is missing and keeps row 1 in step with `headers`.
+ * A sheet left over from an older version keeps its rows but gets the current
+ * header row, so the columns are never labelled with the previous layout.
+ */
 function ensureSheet_(ss, name, headers) {
   var sh = ss.getSheetByName(name) || ss.insertSheet(name);
-  if (sh.getLastRow() === 0) {
-    sh.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold');
+  var width = Math.max(sh.getLastColumn(), headers.length);
+  if (sh.getMaxColumns() < width) sh.insertColumnsAfter(sh.getMaxColumns(), width - sh.getMaxColumns());
+  var current = sh.getLastRow() ? sh.getRange(1, 1, 1, width).getValues()[0] : [];
+  var same = current.length && headers.every(function (h, i) { return String(current[i]) === h; });
+  if (!same) {
+    var row = headers.slice();
+    while (row.length < width) row.push('');
+    sh.getRange(1, 1, 1, width).setValues([row]).setFontWeight('bold');
     sh.setFrozenRows(1);
   }
   return sh;
@@ -120,12 +131,12 @@ function leaderboard_(windowKey, levelKey) {
 
 /** Teacher view: every column, e-mail and mistake breakdown included. */
 function allResults_(pin) {
-  if (!checkPin_(pin)) return { ok: false, error: 'BAD_PIN' };
+  var bad = pinError_(pin); if (bad) return { ok: false, error: bad };
   return { ok: true, results: readRows_('all') };
 }
 
 function reset_(b) {
-  if (!checkPin_(b.pin)) return { ok: false, error: 'BAD_PIN' };
+  var bad = pinError_(b.pin); if (bad) return { ok: false, error: bad };
   var key = windowFor_(b.window);
   var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_RESULTS);
   if (!sh || sh.getLastRow() < 2) return { ok: true, deleted: 0 };
@@ -180,11 +191,12 @@ function toDate_(v) {
   return isNaN(d.getTime()) ? new Date(0) : d;
 }
 
-function checkPin_(pin) {
-  var given = String(pin == null ? '' : pin).trim();
-  if (!given) return false;
+/** Returns '' when the password matches, or the error code to send back. */
+function pinError_(pin) {
   var stored = setting_('TEACHER_PIN');
-  return !!stored && given === stored;
+  if (!stored) return 'NO_PASSWORD_SET';
+  var given = String(pin == null ? '' : pin).trim();
+  return given && given === stored ? '' : 'BAD_PIN';
 }
 
 function setting_(key) {

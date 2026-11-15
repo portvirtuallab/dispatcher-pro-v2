@@ -919,7 +919,7 @@ function renderTeacher(){
 $('#openForm').onsubmit=function(e){ e.preventDefault(); var pin=$('#tPin').value.trim();
   if(!API){ toast('Not connected: add the Apps Script URL to config.js'); return; }
   apiGet({action:'results',pin:pin}).then(function(r){
-    if(!r.ok){ toast(r.error==='BAD_PIN'?'Wrong password':'Could not load results: '+r.error); return; }
+    if(!r.ok){ toast(r.error==='BAD_PIN'?'Wrong password':r.error==='NO_PASSWORD_SET'?'No password set yet: fill TEACHER_PIN in the SETTINGS tab':'Could not load results: '+r.error); return; }
     TEACH.rows=r.results; TEACH.pin=pin; renderTeacher(); toast(r.results.length+' result(s) loaded'); }).catch(function(){ toast('Network error: check the Apps Script URL'); }); };
 $('#resetLocal').onclick=function(){
   confirmBox('Clear this browser?','Removes the games stored on this computer. Results already sent to the Google Sheet are not touched.','Clear',function(){

@@ -81,6 +81,10 @@ section.view{display:grid;gap:24px}
 /* Leaderboard toolbar */
 .toolbar{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
 .segmented{display:flex;flex-wrap:wrap;gap:6px}
+.gterm{border-left:3px solid var(--line);padding:2px 0 2px 12px;display:grid;gap:2px}
+.gterm b{font-family:var(--f-display);letter-spacing:.01em}
+.gterm p{margin:0}
+.gterm a{color:var(--accent)}
 tr.me td{background:var(--surface-2);font-weight:600}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 
@@ -261,6 +265,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
       <a href="#home">Play</a>
       <a href="#how-to-play">How to play</a>
       <a href="#board">Leaderboard</a>
+      <a href="#glossary">Glossary</a>
       <a href="#teacher">Teacher panel</a>
     </nav>
     <button class="themebtn" id="themeBtn" type="button" aria-label="Switch theme">◐ Theme</button>
@@ -296,6 +301,28 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
     </div>
     <p class="small muted" id="bStatus"></p>
     <div class="tablewrap"><table id="bTable"></table></div>
+  </div>
+</section>
+
+<!-- ============ GLOSSARY ============ -->
+<section class="view" id="v-glossary" hidden>
+  <div>
+    <p class="eyebrow">Glossary</p>
+    <h2>Road transport, in the words the paperwork uses</h2>
+    <p class="lead small">Every entry says where the term comes from. Terms marked <span class="demo-badge">game</span> are this simulator's own wording, not legal terms: they stand for a rule the game applies in a simplified way.</p>
+  </div>
+  <div class="panel stack">
+    <div class="toolbar">
+      <label class="small" style="display:grid;gap:4px;flex:1 1 260px"><b>Search</b><input id="gSearch" class="field" type="search" placeholder="reefer, T1, ADR, tachograph…"></label>
+      <div class="segmented" id="gGroups" role="group" aria-label="Section"></div>
+    </div>
+    <p class="small muted" id="gCount"></p>
+    <div id="gTerms" class="stack"></div>
+  </div>
+  <div class="panel stack">
+    <h3>Sources</h3>
+    <p class="small muted">Checked against the official texts. Where an entry simplifies a rule for the game, it says so.</p>
+    <ul class="small" id="gSources" style="margin:0;padding-left:18px;display:grid;gap:6px"></ul>
   </div>
 </section>
 
@@ -709,11 +736,11 @@ function shiftNo(k){ var m=store('shifts')||{}; return m[k]||1; }
 function setShift(k,n){ var m=store('shifts')||{}; m[k]=n; store('shifts',m); }
 
 /* ---------- Router ---------- */
-var VIEWS=['home','board','how-to-play','teacher'];
+var VIEWS=['home','board','glossary','how-to-play','teacher'];
 function route(){ var h=(location.hash||'#home').slice(1); if(VIEWS.indexOf(h)<0) h='home';
   VIEWS.forEach(function(v){ $('#v-'+v).hidden=(v!==h); });
   $$('.nav a').forEach(function(a){ if(a.getAttribute('href')==='#'+h) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
-  if(h==='teacher') renderTeacher(); if(h==='home') renderHome(); if(h==='board') loadBoard();
+  if(h==='teacher') renderTeacher(); if(h==='home') renderHome(); if(h==='board') loadBoard(); if(h==='glossary') renderGloss();
   window.scrollTo(0,0); }
 window.addEventListener('hashchange',route);
 
@@ -916,6 +943,65 @@ $('#resetClass').onclick=function(){
       toast(r.deleted+' result(s) deleted');
       apiGet({action:'results',pin:pin}).then(function(x){ TEACH.rows=x.ok?x.results:[]; renderTeacher(); });
     }).catch(function(){ toast('Network error: check the Apps Script URL'); }); }); };
+
+/* ---------- Glossary ----------
+   src: the short tag shown under the entry, matching an id in GSOURCES.
+   game: true marks this simulator's own wording rather than a legal term. */
+var GSOURCES=[
+ {id:'iso6346',label:'ISO 6346:2022',title:'ISO 6346:2022 · Freight containers — Coding, identification and marking',url:'https://www.iso.org/standard/83558.html',note:'Edition 4, April 2022. A fifth edition is in preparation.'},
+ {id:'adr',label:'ADR',title:'UNECE · Agreement concerning the International Carriage of Dangerous Goods by Road (ADR 2025, ECE/TRANS/352)',url:'https://digitallibrary.un.org/record/4068196',note:'Applicable since 1 January 2025.'},
+ {id:'561',label:'Reg. 561/2006',title:'Regulation (EC) No 561/2006 · driving times, breaks and rest periods',url:'https://eur-lex.europa.eu/eli/reg/2006/561/oj',note:'Consolidated text, as amended by Regulations (EU) 2020/1054 and 2024/1258.'},
+ {id:'ucc',label:'UCC',title:'Regulation (EU) No 952/2013 · Union Customs Code',url:'https://eur-lex.europa.eu/eli/reg/2013/952/oj',note:'Article 162 defines the standard customs declaration.'},
+ {id:'transit',label:'Common transit',title:'Convention on a common transit procedure (Interlaken, 20 May 1987)',url:'https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:21987A0813(01)',note:'OJ L 226, 13.8.1987. Declarations are filed electronically in NCTS.'},
+ {id:'cmr',label:'CMR',title:'Convention on the Contract for the International Carriage of Goods by Road (Geneva, 19 May 1956)',url:'https://treaties.un.org/doc/Publication/MTDSG/Volume%20I/Chapter%20XI/XI-B-11.en.xml',note:'In force since 2 July 1961. UN Treaty Collection, chapter XI-B-11.'}
+];
+var GLOSS=[
+ {g:'Container',t:'ISO code',d:'The four characters stamped next to the container number, such as 42G1. The first says the length (2 = 20 ft, 4 = 40 ft, L = 45 ft), the second the height and width, and the last two the type. It is what tells you, without opening anything, which trailer and which driver the box needs.',src:'iso6346'},
+ {g:'Container',t:'BIC code / container number',d:'The 11 characters that identify one box worldwide: four letters of owner code ending in U for freight containers, six digits and a check digit, as in SDGU 330409 2.',src:'iso6346'},
+ {g:'Container',t:'TEU',d:'Twenty-foot Equivalent Unit, the unit ports count in. A 20 ft box is 1 TEU, a 40 ft box 2 TEU. It measures volume of traffic, not weight.',src:'iso6346'},
+ {g:'Container',t:'High cube',d:'A container one foot taller than standard, 9 ft 6 in instead of 8 ft 6 in. In the ISO code the second character gives it away: 45G1 is a 40 ft high cube, not a 45 ft box. The 45 ft is L5G1.',src:'iso6346'},
+ {g:'Container',t:'Reefer',d:'Refrigerated container, with its own cooling unit and a set temperature. Group R in the ISO type code. It needs a driver and a trailer able to carry and power it.',src:'iso6346'},
+ {g:'Container',t:'Delivery note',d:'The document that travels with the goods and states what moves, from where, to where and under what conditions. In Spain, albaran. In the game, each delivery note is one job to assign.',game:true},
+ {g:'Dangerous goods',t:'ADR',d:'The European agreement that governs the carriage of dangerous goods by road: how they are classified, packed, labelled and documented, and what training the driver must hold. A driver without the relevant ADR certificate cannot take the load.',src:'adr'},
+ {g:'Dangerous goods',t:'UN number',d:'Four digits identifying a dangerous substance, as in UN 1203 for petrol. It appears on the orange plate at the front and rear of the vehicle, above the hazard identification number.',src:'adr'},
+ {g:'Dangerous goods',t:'Hazard class',d:'The family a dangerous substance belongs to: class 3 flammable liquids, class 8 corrosives, and so on, up to class 9. It decides the placard, the segregation rules and part of the driver training.',src:'adr'},
+ {g:'Driving time',t:'Driving period',d:'Continuous driving may not exceed 4 h 30 min; after that the driver takes a break of at least 45 minutes, which may be split into 15 then 30 minutes.',src:'561'},
+ {g:'Driving time',t:'Daily rest',d:'At least 11 consecutive hours, reducible to 9 hours no more than three times between two weekly rest periods. This is what makes a long trip spill into a second day.',src:'561'},
+ {g:'Driving time',t:'Tachograph',d:'The device that records driving, other work, availability and rest. It is the evidence in a roadside check; the shift planned in an office has to survive it.',src:'561'},
+ {g:'Driving time',t:'Service time',d:'The game adds up kilometres divided by 80 km/h, plus 30 minutes loading and unloading, plus a 45-minute break when driving passes 4 h 30 min. A deliberate simplification of the real rules, enough to make the shift add up.',game:true},
+ {g:'Driving time',t:'Overnight',d:'In the game, the qualification a driver needs for a service that will not fit inside the 9-hour shift. It stands for a trip requiring a rest away from base, and it takes the driver out for the whole shift.',game:true},
+ {g:'Customs',t:'Union goods',d:'Goods produced in the customs territory of the Union, or imported into it and released for free circulation. They move inside the Union without a customs procedure.',src:'ucc'},
+ {g:'Customs',t:'Non-Union goods',d:'Everything else: goods from outside the customs territory that have not been released for free circulation. They stay under customs supervision until a procedure discharges them, which is why they drive the decision in the game.',src:'ucc'},
+ {g:'Customs',t:'EX-A',d:'A standard export declaration: EX is the code for goods leaving the customs territory of the Union, A the code for the standard declaration under Article 162 of the Union Customs Code.',src:'ucc'},
+ {g:'Customs',t:'IM-A',d:'A standard import declaration: IM is the code for trade with countries outside the customs territory of the Union, A again the standard declaration.',src:'ucc'},
+ {g:'Customs',t:'T1',d:'The external transit procedure, for non-Union goods moving between two points without being released for free circulation: duty stays suspended until the goods reach the office of destination. Used when a box leaves the port for a customs warehouse inland.',src:'transit'},
+ {g:'Customs',t:'T2',d:'Internal transit, the counterpart of T1, for Union goods crossing a non-Union territory without losing their status.',src:'transit'},
+ {g:'Customs',t:'NCTS',d:'New Computerised Transit System, the electronic system in which transit declarations are lodged and discharged across the EU, EFTA and the other contracting parties.',src:'transit'},
+ {g:'Customs',t:'Customs warehouse',d:'Premises approved to store non-Union goods with duty and VAT suspended until they leave. Reaching one is what a T1 is for.',src:'ucc'},
+ {g:'Operations',t:'CMR',d:'The convention governing the contract of international road carriage, and by extension the consignment note that proves it. It sets who is liable for loss, damage and delay, and the limits of that liability.',src:'cmr'},
+ {g:'Operations',t:'Drayage',d:'The short road leg between the port or terminal and an inland point: the pick-up and the delivery, not the long haul. It is what the whole game is made of.',game:true},
+ {g:'Operations',t:'Base',d:'The depot a driver starts and ends the day at, Barcelona or Valencia in the game. A driver based in one city cannot take a delivery note leaving from the other.',game:true},
+ {g:'Operations',t:'High priority',d:'In the game, a delivery note that must be served for the Expert level objective to count: a booking with a closing time that cannot be missed.',game:true}
+];
+function renderGloss(){
+  var q=($('#gSearch').value||'').trim().toLowerCase();
+  var groups=[]; GLOSS.forEach(function(e){ if(groups.indexOf(e.g)<0) groups.push(e.g); });
+  var seg=$('#gGroups');
+  if(!seg.children.length){ seg.innerHTML='<button class="btn primary" type="button" data-group="">All</button>'+groups.map(function(g){return '<button class="btn" type="button" data-group="'+esc(g)+'">'+esc(g)+'</button>';}).join('');
+    $$('#gGroups [data-group]').forEach(function(b){ b.onclick=function(){ GLOSS.group=b.getAttribute('data-group');
+      $$('#gGroups [data-group]').forEach(function(x){ x.classList.toggle('primary',x===b); }); renderGloss(); }; }); }
+  var rows=GLOSS.filter(function(e){ return (!GLOSS.group||e.g===GLOSS.group) && (!q||(e.t+' '+e.d).toLowerCase().indexOf(q)>=0); });
+  $('#gCount').textContent=rows.length+' of '+GLOSS.length+' terms.';
+  $('#gTerms').innerHTML=rows.length?groups.filter(function(g){return rows.some(function(e){return e.g===g;});}).map(function(g){
+    return '<h3 class="eyebrow" style="margin:10px 0 0">'+esc(g)+'</h3>'+rows.filter(function(e){return e.g===g;}).map(function(e){
+      var s=e.src&&GSOURCES.filter(function(x){return x.id===e.src;})[0];
+      return '<div class="gterm"><b>'+esc(e.t)+'</b>'+(e.game?' <span class="demo-badge">game</span>':'')+
+       '<p class="small">'+esc(e.d)+'</p>'+(s?'<p class="small muted">Source: <a href="'+esc(s.url)+'" target="_blank" rel="noopener">'+esc(s.label)+'</a></p>':'')+'</div>';
+    }).join('');
+  }).join(''):'<p class="small muted">Nothing matches that. Try a shorter word.</p>';
+  if(!$('#gSources').children.length) $('#gSources').innerHTML=GSOURCES.map(function(s){
+    return '<li><a href="'+esc(s.url)+'" target="_blank" rel="noopener">'+esc(s.title)+'</a>'+(s.note?' <span class="muted">'+esc(s.note)+'</span>':'')+'</li>'; }).join(''); }
+$('#gSearch').oninput=renderGloss;
 
 /* ---------- Leaderboard ---------- */
 var BOARD={window:'hour',level:''};
